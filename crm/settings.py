@@ -26,10 +26,10 @@ SECRET_KEY = 'django-insecure-0iji++t(awmk_dc%gvjhsduhpf&kqj^8-=cz=f8qud7_d97!1w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 X_FRAME_OPTIONS = 'ALLOWALL'
+CSRF_TRUSTED_ORIGINS = ['https://3brokers.com.br/']
+LOGIN_REDIRECT_URL = 'https://3brokers.com.br/'
 
-LOGIN_REDIRECT_URL = 'http://crm2.3brokers.com.br:8000/'
-
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -106,7 +106,7 @@ DATABASES = {
         'NAME': 'crm',
         'USER': 'root',
         # Coloque a senha do seu usuário root aqui, se aplicável.
-        'PASSWORD': '',
+        'PASSWORD': '99480231aA!',
         'HOST': '127.0.0.1',
         # Certifique-se de que a porta está correta, 3360 é um valor incomum.
         'PORT': '3306',
@@ -167,6 +167,8 @@ if DEBUG:
 else:
 
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

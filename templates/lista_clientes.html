@@ -111,7 +111,7 @@
                     <button id="botaoModoLista" class="tab-button active">Modo Lista</button>
                     <button id="botaoModoKanban" class="tab-button">Modo Kanban</button>
                   </div>
-                   <div class="card">
+                   <div class="card p-4">
                     <!-- Adicione este bloco acima da tabela existente -->
                     <div class="mb-3">
                         <form method="GET" action="{% url 'lista_de_clientes' %}">
@@ -395,33 +395,33 @@
                 }
              </script>
              <script>      
-                var clientesData = JSON.parse('{{ clientes_json|safe }}');
+                var clientesData = JSON.parse('{{ clientes_json|escapejs }}');
 
-                function abrirModal(clienteId) {
-                    var clienteIdNumerico = Number(clienteId);
-                    const cliente = clientesData.find(c => Number(c.id) === clienteIdNumerico);
-                    if (cliente) {
-                        // Converter strings de data para objetos Date antes de tentar formatá-las
-                        const dataAdmissao = cliente.data_admissao ? new Date(cliente.data_admissao).toLocaleDateString() : "N/A";
-                        const dataNascimento = cliente.data_nascimento ? new Date(cliente.data_nascimento).toLocaleDateString() : "N/A";
-                        // Preenchendo os detalhes do cliente no modal
-                        document.getElementById('modalNome').textContent = cliente.nome || "N/A";
-                        document.getElementById('modalEmail').textContent = cliente.email || "N/A";
-                        document.getElementById('modalCPF').textContent = cliente.cpf || "N/A";
-                        document.getElementById('modalTelefone').textContent = cliente.telefone || "N/A";
-                        document.getElementById('modalEstadoCivil').textContent = cliente.estado_civil || "N/A";
-                        document.getElementById('modalNaturalidade').textContent = cliente.naturalidade || "N/A";
-                        document.getElementById('modalProfissao').textContent = cliente.profissao || "N/A";
-                        document.getElementById('modalDataAdmissao').textContent = dataAdmissao;
-                        document.getElementById('modalDataNascimento').textContent = dataNascimento;
+function abrirModal(clienteId) {
+    var clienteIdNumerico = Number(clienteId);
+    const cliente = clientesData.find(c => Number(c.id) === clienteIdNumerico);
+    if (cliente) {
+        // Converter strings de data para objetos Date antes de tentar formatá-las
+        const dataAdmissao = cliente.data_admissao ? new Date(cliente.data_admissao).toLocaleDateString() : "N/A";
+        const dataNascimento = cliente.data_nascimento ? new Date(cliente.data_nascimento).toLocaleDateString() : "N/A";
+        // Preenchendo os detalhes do cliente no modal
+        document.getElementById('modalNome').textContent = cliente.nome || "N/A";
+        document.getElementById('modalEmail').textContent = cliente.email || "N/A";
+        document.getElementById('modalCPF').textContent = cliente.cpf || "N/A";
+        document.getElementById('modalTelefone').textContent = cliente.telefone || "N/A";
+        document.getElementById('modalEstadoCivil').textContent = cliente.estado_civil || "N/A";
+        document.getElementById('modalNaturalidade').textContent = cliente.naturalidade || "N/A";
+        document.getElementById('modalProfissao').textContent = cliente.profissao || "N/A";
+        document.getElementById('modalDataAdmissao').textContent = dataAdmissao;
+        document.getElementById('modalDataNascimento').textContent = dataNascimento;
 
-                        document.getElementById('modalRendaTipo').textContent = cliente.renda_tipo || "N/A";
-                        document.getElementById('modalStatusInput').value = cliente.status;
-                        document.getElementById('modalPossuiCarteira').textContent = cliente.possui_carteira_mais_tres_anos ? "Sim" : "Não";
-                        document.getElementById('modalNumeroPIS').textContent = cliente.numero_pis || "N/A";
-                        document.getElementById('modalPossuiDependente').textContent = cliente.possui_dependente ? "Sim" : "Não";
-                
-                        // Supondo que o nome do corretor esteja acessível em cliente.corretor.nome
+        document.getElementById('modalRendaTipo').textContent = cliente.renda_tipo || "N/A";
+        document.getElementById('modalStatusInput').value = cliente.status;
+        document.getElementById('modalPossuiCarteira').textContent = cliente.possui_carteira_mais_tres_anos ? "Sim" : "Não";
+        document.getElementById('modalNumeroPIS').textContent = cliente.numero_pis || "N/A";
+        document.getElementById('modalPossuiDependente').textContent = cliente.possui_dependente ? "Sim" : "Não";
+        
+         // Supondo que o nome do corretor esteja acessível em cliente.corretor.nome
                         let nomeCorretor = 'N/A';
 
                         // Verifique se 'cliente' e 'cliente.corretor' estão definidos
@@ -430,28 +430,32 @@
                             nomeCorretor = cliente.corretor.username;
                         }
                         currentClienteId = clienteId;
-
-                
-                       // Atualizar os onclick handlers dos links
-                        document.getElementById('pdfLink1').setAttribute('onclick', `openPdf('${nomeCorretor}', '${cliente.cpf}', 'documentos_pessoais')`);
-                        document.getElementById('pdfLink2').setAttribute('onclick', `openPdf('${nomeCorretor}', '${cliente.cpf}', 'extrato_bancario')`);
-                        document.getElementById('pdfLink3').setAttribute('onclick', `openPdf('${nomeCorretor}', '${cliente.cpf}', 'documentos_dependente')`);
-                        document.getElementById('pdfLink4').setAttribute('onclick', `openPdf('${nomeCorretor}', '${cliente.cpf}', 'documentos_conjuge')`);
-
-                        // Mostrar o modal
-                        document.getElementById('clienteModal').classList.remove('hidden');
-                    } else {
-                        console.error('Cliente não encontrado');
-                    }
-                }
-
-                function openPdf(nomeCorretor, cpf, categoriaDocumento) {
+                        
+        function openPdf(nomeCorretor, cpf, categoriaDocumento) {
                     // Construir o caminho completo do arquivo
                     let pdfPath = `/media/documentos/${nomeCorretor}/${cpf}/${categoriaDocumento}/${categoriaDocumento.toLowerCase()}_combined.pdf`;
 
                     // Abrir o PDF em uma nova aba
                     window.open(pdfPath, '_blank');
                 }
+        // Atualizar os links dos documentos para abrir o PDF com base no nome do corretor e CPF do cliente
+        document.getElementById('pdfLink1').setAttribute('href', `/media/documentos/${nomeCorretor}/${cliente.cpf}/documentos_pessoais/documentos_pessoais_combined.pdf`);
+        document.getElementById('pdfLink2').setAttribute('href', `/media/documentos/${nomeCorretor}/${cliente.cpf}/extrato_bancario/extrato_bancario_combined.pdf`);
+        document.getElementById('pdfLink3').setAttribute('href', `/media/documentos/${nomeCorretor}/${cliente.cpf}/documentos_dependente/documentos_dependente_combined.pdf`);
+        document.getElementById('pdfLink4').setAttribute('href', `/media/documentos/${nomeCorretor}/${cliente.cpf}/documentos_conjuge/documentos_conjuge_combined.pdf`);
+
+        // Mostrar o modal
+        $('#clienteModal').modal('show');
+    } else {
+        console.error('Cliente não encontrado');
+    }
+}
+
+function fecharModal() {
+    $('#clienteModal').modal('hide');
+}
+
+                
                                 
                 
                 

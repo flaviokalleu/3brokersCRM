@@ -17,6 +17,8 @@ from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.shortcuts import render, redirect
+
+from users.backup.backup import perform_backup
 from .forms import ClienteForm2, ContratoForm, CorretorEditForm, FinalizarProcessoForm, ImovelForm, ProcessoForm, ProprietarioEditForm, UploadBackupForm, UserUpdateForm, VideoForm
 from django.core.management import call_command
 from .models import Backup, Contrato, Imovel, Nota_notification, Tag, Video, VideoView
@@ -112,6 +114,22 @@ def index(request):
     context = {'imoveis': imoveis}
     return render(request, 'index.html', context)
 
+@csrf_exempt
+def backup_view(request):
+    global backup_progress  # Definindo como global
+
+    if request.method == 'POST':
+        # Função de retorno de chamada para relatar o progresso em tempo real
+        def progress_callback(progress):
+            # Atualiza a variável global de progresso
+            global backup_progress
+            backup_progress = progress
+
+        perform_backup(progress_callback=progress_callback)
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'error': 'Only POST requests are allowed for this endpoint'})
+    
 def allimoveis(request):
     tipo_imovel = request.GET.get('tipo_imovel')
     imoveis_list = Imovel.objects.all()
@@ -850,9 +868,11 @@ def consulta_cpf(request):
         if not cpf or len(cpf) != 11:
             return JsonResponse({'error': 'CPF inválido'})
 
-        
-        result = consulta_cpf_func(cpf)
-        return JsonResponse(result)
+        try:
+            result = consulta_cpf_func(cpf)
+            return JsonResponse(result)
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
 
     return render(request, 'consulta_cpf.html', {'username': request.user.username})
 

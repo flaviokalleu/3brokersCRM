@@ -144,20 +144,7 @@ class ClienteForm2(forms.ModelForm):
         model = Cliente
         exclude = ['status', 'aguardado_aprovacao', 'opcoes_processo', 'tipos_processo','corretor']
 
-    valor_da_renda = forms.DecimalField(
-        label='Valor de Renda',
-        max_digits=10,
-        decimal_places=2,
-        localize=True,  # Adiciona separadores de milhares e vírgulas
-        widget=forms.TextInput(attrs={'placeholder': 'R$ 0,00'}),
-    )
-
-    data_nascimento = forms.DateField(
-        label='Data de Nascimento',
-        input_formats=['%d/%m/%Y'],  # Define o formato esperado da data
-        widget=forms.DateInput(format='%d/%m/%Y', attrs={'placeholder': 'DD/MM/AAAA'}),
-    )
-
+    
  
 class DocumentoForm(forms.ModelForm):
     class Meta:

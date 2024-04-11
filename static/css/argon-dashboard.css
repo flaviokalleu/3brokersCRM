@@ -25257,10 +25257,6 @@ p {
   opacity: .8;
 }
 
-.dark-version .table> :not(caption)>*>* {
-  border-color: rgba(255, 255, 255, 0.4) !important;
-  color: rgba(255, 255, 255, 0.6) !important;
-}
 
 
 

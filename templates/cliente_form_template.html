@@ -1,344 +1,295 @@
-<style>
-    .form-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    box-shadow: 0 0 10px rgb(0 0 0 / 0%);
-   }
-    .form-container .header {
-    text-align: center;
-    margin-bottom: 20px;
-    }
-    .form-container h2 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #3c3f9f;
-    }
-    .form-container p {
-    color: #888;
-    }
-    .form-group {
-    margin-bottom: 16px;
-    color: black; 
-    }
-    .form-group label {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 5px;
-        color: #fff;
-    }
-    .form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    outline: none;
-    color: black;
-    }
-    .form-group input:focus {
-    border-color: #a5acff;
-    box-shadow: 0 0 5px rgba(165, 172, 255, 0.5);
-    }
-    .error-message {
-    color: red;
-    font-size: 12px;
-    }
-    .submit-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: #3c3f9f;
-    color: white;
-    text-align: center;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 20px;
-    }
-    .submit-btn:hover {
-    background-color: #292c7f;
-    }
-    .submit-btn:focus {
-    box-shadow: 0 0 5px rgba(165, 172, 255, 0.5);
-    }
-    .input-text-black input {
-    color: black; 
-    }
-    .text-center {
-      text-align: center;
-  }
-  /* Add this to your existing styles */
-.form-error-highlight {
-    border: 2px solid red; /* Red border for highlighted fields */
-    background-color: #FFB6C1; /* Light pink background for better visibility */
-}
-
-.error-message {
-    color: red;
-    font-size: 12px;
-    margin-top: 5px; /* Add some spacing between the input and error message */
-}
-
- </style>
 {% extends 'base.html' %}
 {% block main_content %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Cliente</title>
-    {% load static %}
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="g-sidenav-show bg-gray-100">
-    <!-- Adicione isso em algum lugar do seu HTML, fora do formulário -->
-    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              
-              <h5 class="modal-title" id="errorModalLabel">Aguarde 5 Segundos ele irar fechar automaticamente</h5>
-              
-            </div>
-            <div class="modal-body">
-              <p id="errorMessage"></p>
-            </div>
-            <div class="modal-footer">
-             
-            </div>
-          </div>
-        </div>
-      </div>
-    <div class="form-container">
-        <div class="header">
-            <h2>Criar Cliente</h2>
-            <p>Insira as informações do cliente abaixo.</p>
-        </div>
-        <div id="error-container" class="text-center">
-            {% if messages %}
-                {% for message in messages %}
-                    <p class="{% if message.tags %} {{ message.tags }} {% endif %}">{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-        </div>
-        <!-- Modifique a parte do seu formulário para exibir o nome do campo obrigatório -->
-<form id="client-form" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="form-group text-black">
-            <label for="{{ field.id_for_label }}" class="text-black">{{ field.label }}</label>
-            
-            {% if field.name == 'documentos_pessoais' or field.name == 'extrato_bancario' or field.name == 'documentos_dependente' or field.name == 'documentos_conjuge' %}
-        
-                <input type="file" name="{{ field.name }}_file" multiple class="text-white">
-                {% if form.instance.pk %}
-                    {% if field.value %}
-                        <p class="text-white">Arquivos já enviados: {% for file in field.value.all %}{{ file.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-                    {% else %}
-                        <p class="text-white">Nenhum arquivo enviado.</p>
-                    {% endif %}
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<div class="container-fluid py-4 px-2 sm:px-4">
+    <div class="card shadow-lg rounded-lg">
+        <div class="card-body p-3 sm:p-6">
+            <h2 class="text-xl sm:text-2xl font-bold text-center mb-4 text-white p-3 sm:p-4 rounded">Criar Cliente</h2>
+            <p class="text-center text-gray-500 mb-4">Insira as informações do cliente abaixo.</p>
+            <div id="error-container" class="text-center">
+                {% if messages %}
+                    {% for message in messages %}
+                        <p class="{% if message.tags %} {{ message.tags }} {% endif %}">{{ message }}</p>
+                    {% endfor %}
                 {% endif %}
-            {% else %}
-                {{ field }}
-            {% endif %}
-            {% if field.errors %}
-                <!-- Adicione um script JavaScript para abrir o modal automaticamente em caso de erro -->
-                <script>
-                    $(document).ready(function() {
-                        $('#errorModal').modal('show');
-                        $('#errorModal').find('.modal-body #errorMessage').text('{{ field.errors.0 }}: {{ field.label }}'); // Aqui incluímos o nome do campo na mensagem de erro
-                        // Fecha o modal automaticamente após 5 segundos
-                        setTimeout(function(){
-                            $('#errorModal').modal('hide');
-                        }, 5000); // Tempo em milissegundos (neste caso, 5 segundos)
-                    });
-                </script>
-            {% endif %}
+            </div>
+            <form id="client-form" method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="text-sm font-medium text-white">
+                            {% if field.label == "possui_carteira_mais_tres_anos" %}
+                                Possui Carteira por mais de três anos
+                            {% elif field.label == "possui_dependente" %}
+                                Possui Dependente
+                            {% elif field.label == "valor_da_renda" %}
+                                Valor de Renda
+                            {% else %}
+                                {{ field.label }}
+                            {% endif %}
+                        </label>
+                        {% if field.name == 'documentos_pessoais' or field.name == 'extrato_bancario' or field.name == 'documentos_dependente' or field.name == 'documentos_conjuge' %}
+                            <input type="file" name="{{ field.name }}_file" multiple class="form-control text-black">
+                            {% if form.instance.pk %}
+                                {% if field.value %}
+                                    <p class="text-black">Arquivos já enviados: {% for file in field.value.all %}{{ file.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                                {% else %}
+                                    <p class="text-black">Nenhum arquivo enviado.</p>
+                                {% endif %}
+                            {% endif %}
+                        {% elif field.name == 'data_admissao' or field.name == 'data_nascimento' %}
+                            <input id="{{ field.id_for_label }}" type="date" name="{{ field.name }}" autocomplete="off" class="form-control">
+                        {% elif field.name == 'estado_civil' %}
+                            <select id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-control">
+                                {% for choice in field.field.choices %}
+                                    <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        {% elif field.name == 'renda_tipo' %}
+                            <select id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-control">
+                                {% for choice in field.field.choices %}
+                                    <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        {% elif field.name == 'possui_carteira_mais_tres_anos' or field.name == 'possui_dependente' %}
+                            <select id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-control">
+                                <option value="">Selecione...</option>
+                                <option value="true">Sim</option>
+                                <option value="false">Não</option>
+                            </select>
+                        {% else %}
+                            <input id="{{ field.id_for_label }}" type="text" name="{{ field.name }}" autocomplete="off" class="form-control">
+                        {% endif %}
+                        {% if field.errors %}
+                            <p class="error-message">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" id="submit-btn" class="btn btn-primary">Salvar</button>
+            </form>
         </div>
-    {% endfor %}
-    <button type="button" id="submit-btn" class="submit-btn text-white">Salvar</button>
-</form>
-        
     </div>
+</div>
 
-    <!-- Loading overlay and spinner styles -->
-    <style>
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid #3c3f9f;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-
-    <div class="overlay" id="overlay">
+<div class="overlay" id="overlay">
+    <div class="spinner-container">
         <div class="spinner"></div>
+        <p class="loading-text">Enviando Informações Aguarde...</p>
     </div>
-</html>
-<!-- No final do seu arquivo HTML, antes de fechar a tag </body> -->
+</div>
+<Style>
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #ffffff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    color: #ffffff;
+    font-size: 18px;
+    margin-top: 10px;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+
+</style>
+
+<!-- JavaScript scripts -->
+
 <script>
-    $(document).ready(function () {
-        // Formatar o campo "Valor de Renda" com R$ e separadores de milhares
-        // Formatar o campo "Valor de Renda" com R$ e ponto como separador de milhares e vírgula como separador decimal
-        $('#id_valor_da_renda').on('input', function () {
-            var valor = $(this).val().replace(/\D/g, ''); // Remover todos os não dígitos
-            if (valor.length > 0) {
-                valor = parseFloat(valor / 100).toFixed(2); // Dividir por 100 para tratar como centavos
-                valor = valor.replace('.', ','); // Trocar ponto por vírgula como separador decimal
-                valor = valor;
+    $(document).ready(function() {
+        $('#id_cpf').on('input', function() {
+            var cpf = $(this).val().replace(/\D/g, '');
+            if (cpf.length === 11) {
+                cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+                $(this).val(cpf);
             }
-            $(this).val(valor);
         });
 
-        // Formatar o campo "Data de Nascimento" como DD/MM/AAAA
-        $('#id_data_nascimento').on('input', function () {
-            var data = $(this).val().replace(/\D/g, '');
-            if (data.length === 8) {
-                var dia = data.substring(0, 2);
-                var mes = data.substring(2, 4);
-                var ano = data.substring(4, 8);
-                $(this).val(dia + '/' + mes + '/' + ano);
+        document.getElementById('id_possui_carteira_tres_anos').addEventListener('change', function() {
+            var numeroPisInput = document.getElementById('id_numero_pis');
+            if (this.value === 'true') {
+                numeroPisInput.style.display = 'block';
+            } else {
+                numeroPisInput.style.display = 'none';
             }
         });
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        var form = document.getElementById('client-form'); // Substitua 'client-form' pelo ID do seu formulário
-        var emailField = document.getElementById('id_email'); // Substitua 'id_email' pelo ID do campo de email
-    
-        form.addEventListener('input', function(event) {
-            if (event.target.tagName === 'INPUT') {
-                event.target.value = event.target.value.toUpperCase();
-            }
-        });
-    
-        // Adicione um ouvinte de evento específico para o campo de email
-        if (emailField) {
-            emailField.addEventListener('input', function(event) {
-                event.target.value = event.target.value.toUpperCase();
+        
+
+        // Format date fields onBlur
+        var dateFields = document.querySelectorAll('input[type="date"]');
+        dateFields.forEach(function(field) {
+            field.addEventListener('blur', function() {
+                var date = new Date(field.value);
+                var formattedDate = formatDate(date);
+                field.value = formattedDate;
             });
+        });
+
+        // Function to format date as DD/MM/YYYY
+        function formatDate(date) {
+            var day = date.getDate().toString().padStart(2, '0');
+            var month = (date.getMonth() + 1).toString().padStart(2, '0');
+            var year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
     });
-    
-    
-</script>
 
-       <script>
-         document.addEventListener('DOMContentLoaded', function() {
-             var corretorSelect = document.getElementById('corretor-select');
-             var form = document.querySelector('form');
-             var errorContainer = document.getElementById('error-container');
-     
-             corretorSelect.addEventListener('change', function() {
-                 var selectedCorretorId = corretorSelect.value;
-                 console.log('ID do Corretor Selecionado:', selectedCorretorId);
-                 // You can use selectedCorretorId as needed
-             });
-     
-             form.addEventListener('submit', function(event) {
-                 var isValid = true;
-     
-                 // Clear previous error messages and field highlights
-                 errorContainer.innerHTML = '';
-                 form.querySelectorAll('.error-field').forEach(function(field) {
-                     field.classList.remove('error-field');
-                 });
-     
-                 // Check for form field errors
-                 var errorMessages = document.querySelectorAll('.error-message');
-                 errorMessages.forEach(function(errorMessage, index) {
-                     if (errorMessage.textContent.trim() !== '') {
-                         isValid = false;
-     
-                         // Display specific error message at the top of the form
-                         var fieldName = form[index].name;
-                         errorContainer.innerHTML += `<p class="error-message" style="color: red;">Erro no campo ${fieldName}: ${errorMessage.textContent}</p>`;
-     
-                         // Highlight the specific form field with the error
-                         var errorField = form[index];
-                         errorField.classList.add('error-field');
-                     }
-                 });
-     
-                 if (!isValid) {
-                     event.preventDefault(); // Prevent form submission if there are errors
-                 }
-             });
-     
-             // Add an event listener to clear the global error messages and field highlights when the user interacts with the form
-             form.addEventListener('input', function() {
-                 errorContainer.innerHTML = '';
-                 form.querySelectorAll('.error-field').forEach(function(field) {
-                     field.classList.remove('error-field');
-                 });
-             });
-         });
-     </script>
-     <script>
-        $(document).ready(function() {
-            $('#id_cpf').on('input', function() {
-                var cpf = $(this).val().replace(/\D/g, '');
-                if (cpf.length === 11) {
-                    cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-                    $(this).val(cpf);
+    
+
+    $(document).ready(function() {
+    $('#id_telefone').on('input', function () {
+        var telefone = $(this).val().replace(/\D/g, ''); // Remover todos os não dígitos
+        if (telefone.length > 15) {
+            // Limitar o número de caracteres do telefone para 15
+            telefone = telefone.substring(0, 15);
+        }
+        if (telefone.length > 0) {
+            // Formatar o número de telefone
+            var formattedTelefone;
+            if (telefone.length <= 10) {
+                // Se o telefone tiver 10 dígitos (sem o DDD)
+                formattedTelefone = '(' + telefone.substring(0, 2) + ') ' + telefone.substring(2, 6) + '-' + telefone.substring(6, 10);
+            } else {
+                // Se o telefone tiver 11 dígitos (com DDD)
+                formattedTelefone = '(' + telefone.substring(0, 2) + ') ' + telefone.substring(2, 7) + '-' + telefone.substring(7, 11);
+            }
+            $(this).val(formattedTelefone);
+        }
+    });
+});
+
+
+        // Converter todas as letras para maiúsculas
+        $('input[type="text"]').on('input', function() {
+            $(this).val(function(_, val) {
+                return val.toUpperCase();
+            });
+        });
+    
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var corretorSelect = document.getElementById('corretor-select');
+        var form = document.querySelector('form');
+        var errorContainer = document.getElementById('error-container');
+
+        corretorSelect.addEventListener('change', function() {
+            var selectedCorretorId = corretorSelect.value;
+            console.log('ID do Corretor Selecionado:', selectedCorretorId);
+            // You can use selectedCorretorId as needed
+        });
+
+        form.addEventListener('submit', function(event) {
+            var isValid = true;
+
+            // Clear previous error messages and field highlights
+            errorContainer.innerHTML = '';
+            form.querySelectorAll('.error-field').forEach(function(field) {
+                field.classList.remove('error-field');
+            });
+
+            // Check for form field errors
+            var errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(function(errorMessage, index) {
+                if (errorMessage.textContent.trim() !== '') {
+                    isValid = false;
+
+                    // Display specific error message at the top of the form
+                    var fieldName = form[index].name;
+                    errorContainer.innerHTML += `<p class="error-message" style="color: red;">Erro no campo ${fieldName}: ${errorMessage.textContent}</p>`;
+
+                    // Highlight the specific form field with the error
+                    var errorField = form[index];
+                    errorField.classList.add('error-field');
                 }
             });
+
+            if (!isValid) {
+                event.preventDefault(); // Prevent form submission if there are errors
+            }
         });
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            var form = document.getElementById('client-form');
-            var overlay = document.getElementById('overlay');
-            var submitBtn = document.getElementById('submit-btn');
 
-            submitBtn.addEventListener('click', function() {
-                // Show overlay and spinner
-                overlay.style.display = 'flex';
-
-                // Submit the form
-                form.submit();
+        // Add an event listener to clear the global error messages and field highlights when the user interacts with the form
+        form.addEventListener('input', function() {
+            errorContainer.innerHTML = '';
+            form.querySelectorAll('.error-field').forEach(function(field) {
+                field.classList.remove('error-field');
             });
+        });
+    });
 
-            // Optional: Reload the page after successful form submission
-            form.addEventListener('submit', function(event) {
-                // You can add additional logic here to check if the form submission was successful
-                // For simplicity, we're reloading the page unconditionally
+    
+   $(document).ready(function() {
+       $('#id_cpf').on('input', function() {
+           var cpf = $(this).val().replace(/\D/g, '');
+           if (cpf.length === 11) {
+               cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+               $(this).val(cpf);
+           }
+       });
+   });
+   
+   $(document).ready(function() {
+    var form = document.getElementById('client-form');
+    var overlay = document.getElementById('overlay');
+    var submitBtn = document.getElementById('submit-btn');
+
+    submitBtn.addEventListener('click', function() {
+        // Show overlay and spinner
+        overlay.style.display = 'flex';
+
+        // Submit the form
+        submitForm();
+    });
+
+    function submitForm() {
+        // Perform form submission via AJAX
+        $.ajax({
+            url: form.action,
+            method: form.method,
+            data: new FormData(form),
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Reload the page after successful form submission
                 location.reload();
-            });
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            },
+            complete: function() {
+                overlay.style.display = 'none'; // Hide overlay and spinner on completion
+            }
         });
-    </script>
-
-     
-     
-     
-       <script src="{% static 'js/core/popper.min.js' %}"></script>
-       <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
-       <script src="{% static 'js/plugins/perfect-scrollbar.min.js' %}"></script>
-       <script src="{% static 'js/plugins/smooth-scrollbar.min.js' %}"></script>
-       <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>  
-       <script src="{% static 'js/argon-dashboard.min.js' %}"></script>
-    </body>
- </html>
- {% endblock %}
+    }
+});
+</script>
+{% endblock %}

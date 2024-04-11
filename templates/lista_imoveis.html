@@ -1,6 +1,6 @@
-<!-- lista_imoveis.html -->
+﻿<!-- lista_imoveis.html -->
 {% extends 'base.html' %}
-
+{% load custom_tags %}
 {% block title %}Lista de Imóveis{% endblock %}
 
 {% block main_content %}
@@ -28,10 +28,12 @@
                             <form method="get" action="{% url 'download_imagens' imovel.id %}">
                                 <button type="submit" class="text-white bg-blue-500 border border-blue-600 rounded-full px-4 py-2 hover:bg-blue-600 transition duration-300">Baixar Imagens</button>
                             </form>
+                            {% if request.user|is_admin or request.user|is_correspondente %}
                             <form method="post" action="{% url 'excluir_imovel' imovel.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="text-white bg-red-500 border border-red-600 rounded-full px-4 py-2 hover:bg-red-600 transition duration-300">Excluir Imóvel</button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

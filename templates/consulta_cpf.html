@@ -1,271 +1,158 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block main_content %}
-<!DOCTYPE html>
-<html lang="pt-br">
   {% load static %}
-  <head>
-     <meta charset="utf-8" />
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/ionicons/2.0.1/css/ionicons.min.css">
-     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-     <!-- Apple Touch Icon -->
-     <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}">
-     <!-- Favicon -->
-     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
-     <title>
-        Consulta de CPF
-     </title>
-     <!-- Fonts -->
-     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-     <!-- Nucleo Icons -->
-     <link rel="stylesheet" type="text/css" href="{% static 'css/nucleo-icons.css' %}">
-     <link rel="stylesheet" type="text/css" href="{% static 'css/nucleo-svg.css' %}">
-     <!-- Chart.js -->
-     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     <!-- Font Awesome Icons -->
-     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-     <link rel="stylesheet" type="text/css" href="{% static 'css/nucleo-svg.css' %}">
-     <!-- Argon Dashboard CSS -->
-     <link rel="stylesheet" type="text/css" href="{% static 'css/argon-dashboard.css' %}">
-     <!-- Tailwind CSS -->
-     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-     <!-- Ionicons -->
-     <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-     <script nomodule="" src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-     <style>
-        .loader {
-          border-top-color: #3498db;
-          animation: spinner 1.5s linear infinite;
-        }
-
-        @keyframes spinner {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        .btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .form-container {
-          max-width: 80%;
-          margin: 0 auto;
-          padding: 20px;
-          box-shadow: 0 0 10px rgb(0 0 0 / 0%);
-}
-
-        .form-container .header {
-          text-align: center;
-          margin-bottom: 20px;
-        }
-
-        .form-container h2 {
-          font-size: 24px;
-          font-weight: bold;
-          color: #3c3f9f;
-        }
-
-        .form-container p {
-          color: #888;
-        }
-
-        .form-group {
-          margin-bottom: 16px;
-        }
-
-        .form-group label {
-          display: block;
-          font-size: 14px;
-          margin-bottom: 5px;
-          color: #555;
-        }
-
-        .form-group input {
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #ddd;
-          border-radius: 5px;
-          font-size: 16px;
-          outline: none;
-          color: black; /* Texto preto */
-        }
-
-        .form-group input:focus {
-          border-color: #a5acff;
-          box-shadow: 0 0 5px rgba(165, 172, 255, 0.5);
-        }
-
-        .submit-btn {
-          display: block;
-          width: 100%;
-          padding: 10px;
-          background-color: #3c3f9f;
-          color: white;
-          text-align: center;
-          border: none;
-          border-radius: 5px;
-          font-size: 16px;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-        }
-
-        .submit-btn:hover {
-          background-color: #292c7f;
-        }
-
-        .download-btn {
-          display: none;
-          margin-top: 10px;
-          background-color: #4caf50;
-          color: white;
-          text-decoration: none;
-          padding: 10px;
-          border-radius: 5px;
-          text-align: center;
-          font-size: 16px;
-        }
-
-        #successCard,
-        #loading {
-          opacity: 0;
-          transition: opacity 0.5s ease;
-        }
-
-        #successCard.hidden,
-        #loading.hidden {
-          display: none;
-        }
-     </style>
-  </head>
-  <body class="g-sidenav-show bg-gray-100">
-    <div class="form-container text-center">
-        <div class="header">
-            <h2 class="text-3xl font-bold mb-2">Consulta de CPF</h2>
-            <p class="text-gray-500">Digite o CPF para realizar a consulta.</p>
-        </div>
-        <form action="/consultacpf/" method="post" id="cpfForm" class="space-y-6">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="cpf" class="block text-gray-300">Digite o CPF:</label>
-                <input type="number" name="cpf" id="cpf" placeholder="Digite apenas números, caracteres especiais não serão aceitos"
-                    required pattern="\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}"
-                    class="w-full px-3 py-2 placeholder-blue-300 border border-gray-300 rounded-md text-blue-900 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-black">
-            </div>
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                <ion-icon name="search" class="mr-2 align-middle"></ion-icon>
-                Buscar
-            </button>
-        </form>
-        <div class="text-blue-900 mb-4">
-            <h3 class="font-bold text-xl mb-2">Como funciona?</h3>
-            <p class="mb-4"><strong>Antes de tudo, entenda: Digite apenas números, caracteres especiais não serão aceitos.</strong></p>
-            <p>
-                Após inserir seu CPF e clicar em "Buscar", nosso sistema irá consultar
-                as informações e fornecerá um arquivo para download com os resultados.
-            </p>
-        </div>
+  <div class="container">
+    <div class="text-center mt-5">
+      <h2 class="text-3xl font-bold mb-4">Consulta de CPF</h2>
+      <p class="text-muted">Digite o CPF para realizar a consulta.</p>
     </div>
-
-    <div class="flex flex-col items-center mt-4">
-      <a href="#" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded download-btn hidden" download>
-          <ion-icon name="download" class="mr-2 align-middle"></ion-icon>
-          Baixar PDF
+    <div class="alert alert-warning mt-4" role="alert" style="background-color: gold; color: white;">
+      <strong>Atenção!:</strong> DIGITE APENAS OS NUMEROS DO CPF, NÃO COLOQUE CARATERES ESPECIAIS (.-!?#@)
+    </div>
+    <form id="cpfForm" class="mt-5">
+      <div class="form-group d-flex justify-content-center">
+        <label for="cpf" class="sr-only">CPF:</label>
+        <input type="text" name="cpf" id="cpf" class="form-control mr-2" placeholder="Digite apenas números" required pattern="\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}">
+        <button type="button" class="btn btn-primary" id="btnBuscar">
+          <span id="btnText">Buscar</span>
+          <span id="btnLoader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </form>
+    <div id="loading" class="mt-4 text-center d-none">
+      <p class="text-muted">Aguarde, estamos buscando informações. Por favor, aguarde um momento...</p>
+      <div class="matrix-loader"></div>
+    </div>
+    <div id="successCard" class="alert alert-success mt-4 d-none">
+      <strong>Consulta Concluída!</strong> Seu arquivo está pronto para download.
+    </div>
+    <div id="downloadMessage" class="mt-4 text-center d-none">
+      <p class="text-muted">Arquivo disponível para download.</p>
+      <a href="#" id="downloadBtn" class="btn btn-primary" style="display: none;">
+        <span id="downloadBtnText">Baixar PDF</span>
+        <span id="downloadBtnLoader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
       </a>
-      <p class="text-white text-sm mt-1 hidden" id="downloadMessage">Arquivo disponível para download.</p>
+    </div>
   </div>
 
-    <!-- Card de Sucesso oculto inicialmente -->
-    <div id="successCard" class="p-10 rounded-xl shadow-xl bg-green-100 border border-green-500 max-w-xs sm:max-w-md w-full hidden mt-6">
-        <h2 class="text-green-800 text-2xl mb-4 font-bold text-center">
-            Consulta Concluída!
-        </h2>
-        <p class="text-green-700 text-center" id="successMessage">
-            Seu arquivo está pronto para download.
-        </p>
-    </div>
+  <style>
+    .matrix-loader {
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 14px;
+      white-space: pre;
+    }
 
-    <!-- Spinner & Message -->
-    <div id="loading" class="mt-6 flex flex-col justify-center items-center">
-        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-        <div class="text-white-900">
-            Aguarde, estamos buscando informações. Por favor, aguarde um momento...
-        </div>
-    </div>
-</div>
+    /* Centralize o botão de busca */
+    #cpfForm .form-group {
+      align-items: center;
+    }
 
+    /* Estilize o campo de entrada e o botão de busca */
+    #cpf {
+      width: 250px; /* Ajuste a largura conforme necessário */
+    }
 
-   <!-- JavaScript para mostrar spinner e mensagem ao submeter o formulário -->
-   <script>
+    #btnBuscar {
+      min-width: 100px; /* Defina uma largura mínima para o botão */
+    }
+  </style>
+
+  <script>
     const cpfForm = document.getElementById("cpfForm");
     const loading = document.getElementById("loading");
-    const downloadButton = document.querySelector(".download-btn");
+    const btnBuscar = document.getElementById("btnBuscar");
+    const btnText = document.getElementById("btnText");
+    const btnLoader = document.getElementById("btnLoader");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const downloadBtnText = document.getElementById("downloadBtnText");
+    const downloadBtnLoader = document.getElementById("downloadBtnLoader");
     const successCard = document.getElementById("successCard");
-    const successMessage = document.getElementById("successMessage");
+    const downloadMessage = document.getElementById("downloadMessage");
 
-    
-    // Adicione este trecho para recarregar a página ao clicar no botão de download
-    downloadButton.addEventListener("click", function () {
-    // Recarrega a página
-    location.reload();
-    });
+    function typeWriter(element, phrases, speed) {
+      let phraseIndex = 0;
+      let textIndex = 0;
 
-    cpfForm.addEventListener("submit", async function (e) {
-      e.preventDefault();
-   
-      // Show the loading spinner
-      loading.style.opacity = "1";
-   
-      try {
-         const formData = new FormData(cpfForm);
-         const response = await fetch("/consultacpf/", {
-            method: "POST",
-            body: formData,
-         });
-         const data = await response.json();
-   
-         if (data.message === "Consulta concluída com sucesso.") {
-            successMessage.textContent = data.message;
-   
-            const cpf = formData.get("cpf");
-            const fileName = `${cpf}_modified.pdf`;
-            
-
-// Construa a URL completa para o botão de download
-            downloadButton.href = baseUrl + "{% static 'uploads/PDF/' %}" + fileName.replace(/\\/g, '/');
-
-            downloadButton.target = "_blank";  // Adicione esta linha para abrir em outra aba
-
-   
-            // Wait for a moment to simulate processing time (adjust as needed)
-            await new Promise(resolve => setTimeout(resolve, 1000));
-   
-            // Hide the loading spinner
-            loading.style.opacity = "0";
-   
-            // Show the download button and success card
-            downloadButton.style.display = "block";
-            successCard.style.display = "block";
-         } else {
-            // Hide the loading spinner in case of an error
-            loading.style.opacity = "0";
-   
-            alert("Ocorreu um erro. Tente novamente.");
-         }
-      } catch (error) {
-         console.error("Error:", error);
-   
-         // Hide the loading spinner in case of an error
-         loading.style.opacity = "0";
-   
-         alert("Ocorreu um erro. Tente novamente.");
+      function type() {
+        if (phraseIndex < phrases.length) {
+          if (textIndex < phrases[phraseIndex].length) {
+            element.innerHTML += phrases[phraseIndex].charAt(textIndex);
+            textIndex++;
+            setTimeout(type, speed);
+          } else {
+            // Move to the next phrase
+            phraseIndex++;
+            textIndex = 0;
+            element.innerHTML = "";
+            setTimeout(type, speed * 2); // Pause before typing the next phrase
+          }
+        }
       }
-   });
-   </script>
-</body>
-</html>
+
+      type();
+    }
+
+    btnBuscar.addEventListener("click", function (e) {
+      e.preventDefault();
+      loading.classList.remove("d-none");
+      btnText.classList.add("d-none");
+      btnLoader.classList.remove("d-none");
+
+      let textElement = document.querySelector('.matrix-loader');
+      let phrases = [
+        "Buscando informações no banco de dados...",
+        "Aguarde, seus dados já estão quase lá...",
+        "Preparando arquivo para download...",
+        "Validando informações do CPF...",
+        "Consultando registros...",
+        "Processando dados...",
+        "Analisando resultados...",
+        "Carregando informações adicionais...",
+        "Otimizando consulta...",
+        "Gerando relatório...",
+        "Verificando integridade dos dados...",
+        "Encontrando correspondências...",
+        "Ajustando detalhes...",
+        "Finalizando consulta..."
+      ];
+
+      let speed = 60;
+
+      typeWriter(textElement, phrases, speed);
+
+      // Prepare data for AJAX request
+      const formData = new FormData(cpfForm);
+
+      // Send AJAX request
+      fetch("/consultacpf/", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.file_url) {
+          // Construct correct download URL
+          const baseUrl = window.location.origin;
+          const fileUrl = `${baseUrl}/${data.file_url.replace('consultacpf/', '')}`;
+
+          downloadBtn.href = fileUrl;
+          downloadBtn.style.display = "inline-block";
+          successCard.classList.remove("d-none");
+          downloadMessage.classList.remove("d-none");
+        } else {
+          alert("Ocorreu um erro. Tente novamente.");
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        alert("Ocorreu um erro. Tente novamente.");
+      })
+      .finally(() => {
+        loading.classList.add("d-none");
+        btnText.classList.remove("d-none");
+        btnLoader.classList.add("d-none");
+      });
+    });
+  </script>
 {% endblock %}

@@ -3,7 +3,7 @@ from django.views.generic.base import RedirectView
 from django.contrib.auth import views as auth_views
 from . import views
 from django.conf.urls.static import static
-from .views import adicionar_imovel, assistir_videos, cliente_processo, concluir_processo, deletar_corretor, deletar_pagina_pdf, deletar_proprietario, delete_video, download_imagens_view, editar_cliente, editar_pdf, editar_proprietario, excluir_imovel,lista_imoveis, lista_processos, registrar_visualizacao, send_whatsapp_notification, nova_nota_view, upload_video, visualizar_documentacao, visualizar_pagina_pdf
+from .views import adicionar_imovel, assistir_videos, backup_view, cliente_processo, concluir_processo, deletar_corretor, deletar_pagina_pdf, deletar_proprietario, delete_video, download_imagens_view, editar_cliente, editar_pdf, editar_proprietario, excluir_imovel,lista_imoveis, lista_processos, registrar_visualizacao, send_whatsapp_notification, nova_nota_view, upload_video, visualizar_documentacao, visualizar_pagina_pdf
 from .views import financas_view, deletar_cliente, is_correspondent
 from .views import excluir_nota_notification
 from django.conf.urls.static import static
@@ -19,9 +19,12 @@ from django.views.static import serve
 urlpatterns = [
 
      path('', views.index, name='index'),
+      path('backup/', backup_view, name='backup_view'),
     path('login/', views.login_view, name='login'),
     path('imoveis/', views.allimoveis, name='allimoveis'),
-    path('imovel/<int:imovel_id>/', views.detalhes_imovel, name='detalhes_imovel'),
+    path('imovel/<int:imovel_id>/', views.detalhes_imovel, name='detalhes_imovel'),  
+    
+    
 
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('dashboard/', views.redirect_to_dashboard, name='dashboard_redirect'),
@@ -87,10 +90,7 @@ path('proprietarios/editar/<int:proprietario_id>/', editar_proprietario, name='e
          views.deletar_venda, name='deletar_venda'),
     path('is_correspondent/', is_correspondent, name='is_correspondent'),
     path('clientes/', views.lista_de_clientes, name='lista_de_clientes'),
-    path('processos/deletar/<int:processo_id>/', deletar_processo, name='deletar_processo'),
-    path('backup/', settings_page, name='settings_page'),
-    path('backup/download/<int:backup_id>/', download_backup, name='download_backup'),
-    path('backup/restore/<int:backup_id>/', restore_backup, name='restore_backup'),
+    path('processos/deletar/<int:processo_id>/', deletar_processo, name='deletar_processo'),    
   
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
