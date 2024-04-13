@@ -441,7 +441,7 @@ def deletar_nota_cliente(request, nota_id):
     nota.delete()
     return JsonResponse({'status': 'success', 'message': 'Nota deletada com sucesso.'})
 
-
+#lista de cliente
 def lista_de_clientes(request):
     if is_corretor(request.user):
         todos_clientes = Cliente.objects.filter(corretor=request.user)
@@ -482,6 +482,7 @@ def lista_de_clientes(request):
         cliente.notas_count = cliente.notas.filter(cliente=cliente).count()
         cliente.tem_nota_nova = cliente.notas.filter(nova=True).exists()
 
+        
     meses = []
     for i in range(1, 13):
         nome_mes = _(calendar.month_name[i])
@@ -541,6 +542,7 @@ def atualizar_status_cliente(request):
 
             # Chame a função send_notification aqui
             send_notification(cliente)
+            
 
             # Enviar uma resposta indicando sucesso
             return JsonResponse({"status": "success"})
@@ -753,7 +755,6 @@ def atualizar_cliente(request, client_id):
         novo_status = request.POST.get('novo_status')
         nota_texto = request.POST.get('nota')
        
-
         # Verificar se o status foi alterado
         if novo_status and novo_status != cliente.status:
             cliente.status = novo_status
@@ -764,6 +765,15 @@ def atualizar_cliente(request, client_id):
             # Aqui, incluímos request.user como o valor para o campo criado_por
             nova_nota = Nota.objects.create(cliente=cliente, texto=nota_texto, criado_por=request.user)
             
+            # Verificar se a nota é nova e enviar notificação para o corretor
+            if nova_nota.nova:
+                corretor = cliente.corretor
+                mensagem = f"⚠️ ATENÇÃO⚠️:\n O CLIENTE *{cliente.nome}* TEM UMA NOTA E A NOTA É:.\nDetalhes da nota: *{nova_nota.texto}*"
+
+                send_notification_to_corretor_mensagem_personalizada(corretor, mensagem)
+                # Marcar a nota como não nova após enviar a notificação
+                nova_nota.nova = False
+                nova_nota.save()
 
         # Processamento de documentos, apenas se o corretor e o CPF estiverem disponíveis
         if cliente.corretor and cliente.cpf:
@@ -824,6 +834,7 @@ def atualizar_cliente(request, client_id):
         return JsonResponse({'status': 'success', 'message': 'Cliente atualizado com sucesso.'})
     else:
         return JsonResponse({'status': 'error', 'message': 'Método inválido.'}, status=405)
+
     
 
 
@@ -2026,6 +2037,29 @@ def concluir_processo(request, cliente_id):
         messages.error(request, "Cliente não encontrado.")
         return redirect('lista_clientes')
     
+def send_notification_to_corretor_mensagem_personalizada(corretor, mensagem):
+    try:
+        # Formatando o telefone
+        whatsapp_num = f"{corretor.telefone}@c.us"
+
+        payload = {
+            'number': whatsapp_num,
+            'message': mensagem
+        }
+
+        response = requests.post(
+            'http://localhost:5000/send-message', json=payload)
+
+        if response.json().get('success'):
+            return True  # Indica que a notificação foi enviada com sucesso
+        else:
+            error_message = response.json().get('error', 'Unknown error')
+            return False  # Indica que houve um erro ao enviar a notificação
+
+    except Exception as e:
+        return False  # Indica que houve um erro ao enviar a notificação
+
+
 def send_notification_to_correspondente_mensagem_personalizada(request, mensagem):
     correspondentes = Correspondente.objects.all()
     success = 0
@@ -2041,22 +2075,16 @@ def send_notification_to_correspondente_mensagem_personalizada(request, mensagem
                 'message': mensagem
             }
 
-            
-            
             response = requests.post(
                 'http://localhost:5000/send-message', json=payload)
-
-           
 
             if response.json().get('success'):
                 success += 1
             else:
                 error_message = response.json().get('error', 'Unknown error')
-                
                 failed += 1
 
         except Exception as e:
-            
             failed += 1
 
     # Redirecione para a página 'lista_processos'
@@ -2619,7 +2647,7 @@ def finalizar_processo(request, processo_id):
     else:
         return redirect('lista_processos')
 
-    
+
 def editar_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
     
@@ -2631,9 +2659,21 @@ def editar_cliente(request, cliente_id):
     else:
         form = ClienteForm(instance=cliente)
 
-    notas = Nota.objects.filter(cliente=cliente)  # Certifique-se de ajustar isso com o nome real do seu modelo de Nota
+    notas = Nota.objects.filter(cliente=cliente)
     
+    # Verificar se há uma nova nota adicionada
+    nova_nota = cliente.notas.filter(nova=True).last()
+    if nova_nota:
+        corretor = cliente.corretor  # Pegar o corretor do cliente
+        mensagem = f"Nova nota adicionada para o cliente: {cliente.nome}.\nDetalhes da nota: *{nova_nota.texto}*"
+        send_notification_to_corretor_mensagem_personalizada(corretor, mensagem)  # Enviar notificação para o corretor
+
+        # Marcar a nota como não nova após enviar a notificação
+        nova_nota.nova = False
+        nova_nota.save()
+
     return render(request, 'editar_cliente.html', {'form': form, 'cliente': cliente, 'notas': notas})
+
 
 
 

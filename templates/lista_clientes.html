@@ -557,7 +557,7 @@ function fecharModal() {
                     if (!nota.trim()) {
                         return Promise.reject(new Error("Nota vazia não pode ser enviada."));
                     }
-    
+
                     return fetch('/adicionar-nota-cliente/', {
                         method: 'POST',
                         body: new URLSearchParams({
@@ -572,6 +572,8 @@ function fecharModal() {
                         if (!response.ok) {
                             throw new Error('Erro ao enviar a nota.');
                         }
+                        // Chamar a função JavaScript para enviar a notificação ao corretor
+                        send_notification_to_corretor_mensagem_personalizada(corretor, mensagem);
                         return response.json();
                     });
                 }
