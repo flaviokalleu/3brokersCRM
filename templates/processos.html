@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load custom_tags %}
 {% load static %}
-{% load jsonify %}
 {% load custom_filters %}
 {% block main_content %}    
 <style>
@@ -209,12 +208,11 @@
                     
                 </div>
                 {% for processo in processos %}
-    <div class="modal fade" id="notaModal{{ processo.id }}" tabindex="-1" role="dialog" aria-labelledby="notaModalLabel{{ processo.id }}" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+    <div class="modal fade" id="notaModal-{{ processo.cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="notaModalLabel-{{ processo.cliente.id }}" aria-hidden="true">     <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="notaModalLabel{{ processo.id }}">Notas do Processo</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close modal-close" aria-label="Close" data-bs-dismiss="modal">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -245,8 +243,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-secondary modal-close" data-bs-dismiss="modal">Fechar</button>
                 </div>
+                
             </div>
         </div>
     </div>
