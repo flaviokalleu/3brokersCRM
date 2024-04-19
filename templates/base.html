@@ -141,6 +141,9 @@
 <script nomodule="" src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
          <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+
 
 
       </head>
@@ -254,6 +257,21 @@
                             <span>Tutorial</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link flex items-center text-sm" href="{% url 'marketing' %}">
+                            <ion-icon name="megaphone-outline" class="text-primary mr-2 text-lg"></ion-icon>
+                            <span>Marketing</span>
+                        </a>
+                    </li>
+                    {% if request.user|is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link flex items-center text-sm" href="{% url 'relatorio_clientes' %}">
+                            <ion-icon name="document-text-outline" class="text-primary mr-2 text-lg"></ion-icon>
+                            <span>Relatório de Clientes</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
                 </ul>
             </div>
          </aside>

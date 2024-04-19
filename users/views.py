@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from PyPDF2 import PdfReader, PdfWriter
 from django.core.exceptions import PermissionDenied
 import os
+from django.template.loader import render_to_string
 import zipfile
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
@@ -19,9 +20,9 @@ import json
 from django.shortcuts import render, redirect
 
 from users.backup.backup import perform_backup
-from .forms import ClienteForm2, ContratoForm, CorretorEditForm, FinalizarProcessoForm, ImovelForm, ProcessoForm, ProprietarioEditForm, UploadBackupForm, UserUpdateForm, VideoForm
+from .forms import ClienteForm2, ContratoForm, EditarProcessoForm, ImovelForm, MaterialForm, ProcessoForm, ProprietarioEditForm, UploadBackupForm, UserUpdateForm, VideoForm
 from django.core.management import call_command
-from .models import Backup, Contrato, Imovel, Nota_notification, Tag, Video, VideoView
+from .models import Backup, Contrato, Imovel, MaterialDeMarketing, Nota_notification, Tag, Video, VideoView
 from django.http import HttpResponse
 import os
 from decimal import Decimal
@@ -106,6 +107,19 @@ from django.http import JsonResponse
 import io
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.shortcuts import render
+from django.utils import timezone
+from datetime import timedelta
+from .models import Cliente
+from users.models import CustomUser
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from datetime import datetime
+from django.utils import timezone
+from .models import Cliente
+
 
 def index(request):
     # Recuperar todos os objetos Imovel do banco de dados
@@ -2278,7 +2292,6 @@ def calcular_progresso(processo, processo_id, cliente):
     progresso = len(opcoes_selecionadas) / len(opcoes_disponiveis) * 100
     return int(progresso)
 
-@login_required
 def lista_processos(request):
     corretores_group = Group.objects.filter(name='Corretores').first()
     is_corretor = corretores_group and request.user.groups.filter(pk=corretores_group.pk).exists()
@@ -2287,14 +2300,22 @@ def lista_processos(request):
         processos = Processo.objects.filter(responsaveis=request.user)
     else:
         processos = Processo.objects.all()
-
+        
+        
     for processo in processos:
         processo.progresso = int(calcular_progresso(processo, processo.id, processo.cliente))
         processo.num_notas = Nota_notification.objects.filter(processo=processo).count()
         processo.num_notas_nao_concluidas = Nota_notification.objects.filter(processo=processo, nova=True).count()
+        if processo.cliente:
+            processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
+        
+    
+        
 
     total_processos = processos.count()
+    tipos_processo = TipoProcesso.objects.all()
 
+    opcoes_por_tipo_processo = {}
     tipo_filtro = request.GET.get('filtroTipo', '')
     responsavel_filtro = request.GET.get('filtroResponsaveis', '')
     progresso_filtro = request.GET.get('filtroProgresso', '')
@@ -2321,7 +2342,33 @@ def lista_processos(request):
         else:
             processos = Processo.objects.none()  # Retorna uma queryset vazia se o proprietário não for encontrado
 
-    # Ordenar os nomes de clientes e proprietários em ordem alfabética
+
+    tipo_filtro = request.GET.get('tipo_processo', '')
+    responsavel_filtro = request.GET.get('filtroResponsaveis', '')
+    progresso_filtro = request.GET.get('progresso', '')
+    proprietario_filtro = request.GET.get('proprietario', '')
+
+    if tipo_filtro:
+        processos = processos.filter(tipo__iexact=tipo_filtro)
+
+    if responsavel_filtro:
+        responsavel = CustomUser.objects.filter(id=responsavel_filtro).first()
+        if responsavel:
+            processos = processos.filter(responsaveis=responsavel)
+
+    if progresso_filtro:
+        if progresso_filtro == 'concluido':
+            processos = processos.exclude(data_finalizacao__isnull=True)
+        elif progresso_filtro == 'nao_concluido':
+            processos = processos.filter(data_finalizacao__isnull=True)
+
+    if proprietario_filtro:
+        proprietario = Proprietario.objects.filter(id=proprietario_filtro).first()
+        if proprietario:
+            processos = processos.filter(proprietario=proprietario)
+        else:
+            processos = Processo.objects.none()
+
     clientes = Cliente.objects.all().order_by('nome')
     total_contatos = clientes.count()
 
@@ -2332,38 +2379,57 @@ def lista_processos(request):
     data_fim = request.GET.get('dataFim')
 
     if data_inicio and data_fim:
-        # Converta as datas de string para objetos de data
         data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d').date()
         data_fim = datetime.strptime(data_fim, '%Y-%m-%d').date()
-
-        # Filtre os processos com datas de início e fim dentro do intervalo especificado
         processos = processos.filter(Q(data_inicio__gte=data_inicio) & Q(data_inicio__lte=data_fim))
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ProcessoForm(request.POST, request.FILES)
         if form.is_valid():
-            processo = form.save(commit=False)
-            if 'termo_cliente' in request.FILES:
-                processo.termo_cliente = request.FILES['termo_cliente']
-                processo.save()
-                messages.success(request, 'Processo criado com sucesso!')
-                return redirect('lista_processos')
-            else:
-                messages.error(request, 'O arquivo do termo do cliente é obrigatório.')
-    else:
-        form = ProcessoForm()
+            form.save()
+            messages.success(request, 'Processo editado com sucesso.')
 
+    tipo_processo_opcoes = {
+        'novo': ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep',
+                 'Documentação imóvel', 'Damp', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Itbi',
+                 'Registro', 'Comissão', 'Receber valor', 'Cartório', 'Entrega de chaves'],
+        'usado': ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep',
+                  'Documentação imóvel', 'Damp', 'Pedido avaliação', 'Pag. avaliação', 'Avaliação feita', 'Avaliação no sistema',
+                  'Vistoria engenharia', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Entrada Itbi',
+                  'Pagamento Itbi', 'Recolhimento Itbi ass', 'Registro', 'Exigência', 'Registrado/Averbado', 'Matrícula Atualizada',
+                  'Conformidade Garantia', 'Garantia Inconforme', 'Garantia Conforme', 'Recebimento Valores', 'Comissão',
+                  'Receber valor', 'Cartório', 'Entrega de chaves'],
+        'Agio': ['Escolha Unidade', 'Pagamento sinal', 'Verificação Parcelas', 'Verificação Cond', 'Verificação IPTU',
+                 'Agendamento Cartório', 'Cessão de Direitos', 'Procuração', 'Doc identificação Autenticado',
+                 'Pagamento Agio', 'Recebimento comissão', 'Receber valor', 'Cartório', 'Entrega de chaves']
+    }
+
+    opcoes_por_tipo_processo_json = json.dumps(opcoes_por_tipo_processo)
+    
     return render(request, 'processos.html', {
         'processos': processos,
         'total_processos': total_processos,
+        'tipos_processo': tipos_processo,
+        'tipo_processo_opcoes': tipo_processo_opcoes,
         'clientes': clientes,
         'total_contatos': total_contatos,
         'corretores': corretores_group.user_set.all() if corretores_group else [],
         'username': request.user.username,
         'proprietarios': proprietarios,
+        'opcoes_por_tipo_processo_json': opcoes_por_tipo_processo_json,
         'imoveis_disponiveis': imoveis_disponiveis,
-        'form': form,  # Adicionando o formulário ao contexto da renderização
     })
+    
+
+def alterar_opcao(request, processo_id, opcao_id):
+    processo = Processo.objects.get(pk=processo_id)
+    opcao_selecionada = OpcaoSelecionada.objects.get(pk=opcao_id)
+
+    # Atualizar a opção selecionada para o processo
+    processo.opcoes_selecionadas.clear()
+    processo.opcoes_selecionadas.add(opcao_selecionada)
+
+    return JsonResponse({'success': True})
 
 from django.core.exceptions import ValidationError
 
@@ -2456,53 +2522,8 @@ def deletar_processo(request, processo_id):
 
     return render(request, 'processos.html', {'processo': processo})
 
-def settings_page(request):
-    backups = Backup.objects.all()
-    form = UploadBackupForm()
-
-    if request.method == 'POST':
-        form = UploadBackupForm(request.POST, request.FILES)
-        if form.is_valid():
-            handle_uploaded_file(request.FILES['file'])
-            return redirect('settings_page')
-
-    return render(request, 'settings_page.html', {'form': form, 'backups': backups})
-
-def handle_uploaded_file(file):
-    destination_directory = 'backups'
-    os.makedirs(destination_directory, exist_ok=True)
-
-    with open(os.path.join(destination_directory, file.name), 'wb+') as destination:
-        for chunk in file.chunks():
-            destination.write(chunk)
-
-    Backup.objects.create(name=file.name)
-
-def download_backup(request, backup_id):
-    backup = Backup.objects.get(id=backup_id)
-    file_path = os.path.join('backups', backup.name)
-    with open(file_path, 'rb') as file:
-        response = HttpResponse(file.read(), content_type='application/force-download')
-        response['Content-Disposition'] = f'attachment; filename={backup.name}'
-    return response
 
 
-def restore_backup(request, backup_id):
-    backup = get_object_or_404(Backup, id=backup_id)
-    file_path = os.path.join('backups', backup.name)
-
-    try:
-        with open(file_path, 'rb') as sql_file:
-            sql_query = sql_file.read().decode('utf-8')
-            with connection.cursor() as cursor:
-                cursor.execute(sql_query)
-            connection.commit()
-
-    except IOError as e:
-        error_message = f"Erro durante a restauração do backup: {str(e)}"
-        return render(request, 'settings_page.html', {'error_message': error_message})
-
-    return redirect('settings_page')
 
 
 def debug_csrf(request):
@@ -3073,14 +3094,164 @@ def download_contrato(request, contrato_id):
     else:
         raise Http404("Contrato não encontrado")
     
+from django.shortcuts import redirect
+
+@login_required
 def editar_processo(request, processo_id):
     processo = get_object_or_404(Processo, id=processo_id)
     if request.method == "POST":
-        form = ProcessoForm(request.POST, instance=processo)
+        form = EditarProcessoForm(request.POST, instance=processo)
         if form.is_valid():
             form.save()
-            return redirect('lista_processos')
+            # Redirecionar o usuário de volta para a página de detalhes do processo após a edição
+            return redirect('editar_processo', processo_id=processo_id)
     else:
-        form = ProcessoForm(instance=processo)
+        form = EditarProcessoForm(instance=processo)
     return render(request, 'editar_processo.html', {'form': form})
 
+
+def editar_imovel(request, imovel_id):
+    imovel = get_object_or_404(Imovel, id=imovel_id)
+    if request.method == 'POST':
+        form = ImovelForm(request.POST, request.FILES, instance=imovel)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_imoveis')
+    else:
+        form = ImovelForm(instance=imovel)
+    return render(request, 'editar_imovel.html', {'form': form})
+
+def marketing_view(request):
+    materiais = MaterialDeMarketing.objects.all()
+    return render(request, 'marketing.html', {'materiais': materiais})
+
+def adicionar_material(request):
+    if request.method == 'POST':
+        form = MaterialForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('marketing')
+    else:
+        form = MaterialForm()
+    return render(request, 'marketing.html', {'form': form})
+
+def excluir_material(request, material_id):
+    material = MaterialDeMarketing.objects.get(pk=material_id)
+    if request.method == 'POST':
+        material.delete()
+        return redirect('marketing')
+    return render(request, 'marketing.html', {'material': material})
+
+def relatorio_clientes(request):
+    clientes = Cliente.objects.all()
+
+    # Aplicar filtros
+    status_filter = request.GET.get('status')
+    if status_filter:
+        clientes = clientes.filter(status=status_filter)
+
+    data_inicio_filter = request.GET.get('data_inicio')
+    data_fim_filter = request.GET.get('data_fim')
+    if data_inicio_filter and data_fim_filter:
+        clientes = clientes.filter(data_de_criacao__range=[data_inicio_filter, data_fim_filter])
+
+    corretor_filter = request.GET.get('corretor')
+    if corretor_filter:
+        clientes = clientes.filter(corretor__pk=corretor_filter)
+
+    # Obter todos os corretores
+    corretores = CustomUser.objects.filter(groups__name='Corretores')
+
+    # Calcular estatísticas
+    total_clientes = clientes.count()
+    clientes_aprovados = clientes.filter(status='cliente_aprovado').count()
+    clientes_reprovados = clientes.filter(status='reprovado').count()
+
+    # Obter a data de início e de fim para este mês
+    hoje = timezone.now().date()
+    primeiro_dia_mes = hoje.replace(day=1)
+    ultimo_dia_mes = primeiro_dia_mes.replace(day=28) + timedelta(days=4)
+    ultimo_dia_mes = ultimo_dia_mes - timedelta(days=ultimo_dia_mes.day)
+
+    # Filtrar os clientes criados este mês
+    clientes_mes = clientes.filter(data_de_criacao__range=[primeiro_dia_mes, ultimo_dia_mes])
+
+    # Contar o número de clientes criados este mês
+    novos_clientes_mes = clientes_mes.count()
+
+    contexto = {
+        'clientes': clientes,
+        'total_clientes': total_clientes,
+        'clientes_aprovados': clientes_aprovados,
+        'clientes_reprovados': clientes_reprovados,
+        'novos_clientes_mes': novos_clientes_mes,
+        'corretores': corretores,  # Passar os corretores para o template
+    }
+
+    return render(request, 'relatorio_clientes.html', contexto)
+
+def relatorio_clientes_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="relatorio_clientes.pdf"'
+
+    # Obtendo os clientes com os filtros aplicados
+    status_filter = request.GET.get('status')
+    data_inicio_filter = request.GET.get('data_inicio')
+    data_fim_filter = request.GET.get('data_fim')
+    corretor_filter = request.GET.get('corretor')
+
+    clientes = Cliente.objects.all()
+    if status_filter:
+        clientes = clientes.filter(status=status_filter)
+    if data_inicio_filter and data_fim_filter:
+        clientes = clientes.filter(data_de_criacao__range=[data_inicio_filter, data_fim_filter])
+    if corretor_filter:
+        clientes = clientes.filter(corretor__pk=corretor_filter)
+
+    # Preparando os dados para o relatório
+    data = []
+    for cliente in clientes:
+        corretor_nome = f"{cliente.corretor.first_name} {cliente.corretor.last_name}" if cliente.corretor else ""
+        data.append([
+            cliente.nome,
+            cliente.email,
+            cliente.telefone,
+            corretor_nome,
+            cliente.get_status_display(),
+            cliente.data_de_criacao.strftime("%d/%m/%Y") if cliente.data_de_criacao else ""
+        ])
+
+    # Calculando a largura das colunas com base no conteúdo mais longo de cada coluna
+    column_widths = []
+    for row in data:
+        for i, value in enumerate(row):
+            if len(column_widths) <= i:
+                column_widths.append(len(str(value)))
+            else:
+                column_widths[i] = max(column_widths[i], len(str(value)))
+
+    # Adicionando um padding para melhor legibilidade
+    column_widths = [w * 5 for w in column_widths]
+
+    # Criando o documento PDF
+    doc = SimpleDocTemplate(response, pagesize=landscape(letter))
+
+    # Criando a tabela com os dados
+    table = Table(data, colWidths=column_widths)
+
+    # Estilizando a tabela
+    style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.gray),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, -1), 8),  # Tamanho da fonte definido como 8
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 4),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+    table.setStyle(style)
+
+    # Adicionando a tabela ao documento
+    doc.build([table])
+
+    return response

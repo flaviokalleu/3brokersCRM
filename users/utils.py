@@ -16,3 +16,17 @@ def validate_renda(value):
     # Verifica se o valor é positivo
     if float_value < 0:
         raise ValidationError('O valor da renda deve ser positivo.')
+# users/utils.py
+
+def obter_cor_opcao(opcao):
+    OPCAO_COR_MAP = {
+        'Aprovação': 'btn-primary',
+        'Ficha de cadastro 3B': 'btn-secondary',
+        'Pagamento TSD': 'btn-success',
+        'Fichas Caixa': 'btn-info',
+        'Documentação Dep': 'btn-warning',
+        'Declaração Dep': 'btn-danger',
+        'Documentação imóvel': 'btn-dark',
+        # Adicione as outras opções e cores aqui
+    }
+    return OPCAO_COR_MAP.get(opcao, 'btn-secondary')

@@ -243,6 +243,20 @@
                             <span>Tutorial</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link flex items-center text-sm" href="{% url 'marketing' %}">
+                            <ion-icon name="megaphone-outline" class="text-primary mr-2 text-lg"></ion-icon>
+                            <span>Marketing</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link flex items-center text-sm" href="{% url 'relatorio_clientes' %}">
+                            <ion-icon name="document-text-outline" class="text-primary mr-2 text-lg"></ion-icon>
+                            <span>Relatório de Clientes</span>
+                        </a>
+                    </li>
+                    
+                    
                 </ul>
             </div>
          </aside>
@@ -459,9 +473,9 @@
                                     <tbody>
                                         {% for corretor in top_corretores_list %}
                                             <tr>
-                                                <td>{{ corretor.nome }}</td>
-                                                <td>{{ corretor.total }} Clientes Cadastrados</td>
-                                                <td>
+                                                <td class="text-white">{{ corretor.nome }}</td>
+                                                <td class="text-white">{{ corretor.total }} Clientes Cadastrados</td>
+                                                <td class="text-white">
                                                     {% if corretor.month %}
                                                         {{ corretor.month }}
                                                     {% else %}

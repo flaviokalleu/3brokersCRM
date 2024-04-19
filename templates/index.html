@@ -99,15 +99,15 @@
 
 
 
-<section class="relative bg-gray-700 bg-blend-multiply">
+<section class="relative bg-gray-700 bg-blend-multiply h-screen">
     <video autoplay loop muted class="absolute inset-0 w-full h-full object-cover">
-        <source src="https://3brokers.com.br/wp-content/uploads/2024/01/x2mate.com-Imovel-Banner720p.mp4" type="video/mp4">
+        <source src="{% static 'video/intro.mp4' %}" type="video/mp4">
         Your browser does not support the video tag.
     </video>
     <div class="overlay"></div>
     <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-56 relative">
-        <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">Invista Hoje mesmo no seu imovel!</h1>
-        <p class="mb-8 text-lg font-normal text-white lg:text-xl sm:px-16 lg:px-48">não deixe para depois, o que você pode fazer hoje! saia do aluguel!</p>
+        <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">Invista Hoje mesmo no seu imóvel!</h1>
+        <p class="mb-8 text-lg font-normal text-white lg:text-xl sm:px-16 lg:px-48">Não deixe para depois o que você pode fazer hoje! Saia do aluguel!</p>
         <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
             <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20fazer%20uma%20simula%C3%A7%C3%A3o" class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
                 Fazer Simulação
@@ -116,11 +116,20 @@
                 </svg>
             </a>
             <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20mais%20informa%C3%A7%C3%B5es" class="inline-flex justify-center hover:text-gray-900 items-center py-3 px-5 sm:ms-4 text-base font-medium text-center text-white rounded-lg border border-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-400">
-                Entrar com contato
+                Entrar em contato
             </a>  
         </div>
+        <!-- Seta indicando mais conteúdo abaixo -->
+        
     </div>
+
+    <div class="mt-12">
+            <svg class="animate-bounce w-6 h-6 text-white mx-auto" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path fill="#fff" d="M12 14l8-8-1.4-1.4L12 11.2l-6.6-6.6L3 6z"/>
+            </svg>
+        </div>
 </section>
+
 
 
 <style>
@@ -151,7 +160,14 @@
 
 
 <section id="new-properties" class="properties-section new-properties mt-8">
-    <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMOVEL NOVO</h2>
+    <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMÓVEL NOVO</h2>
+    <!-- Botão de navegação para a esquerda -->
+    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full w-10 h-10 flex items-center justify-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+        <svg class="rtl:rotate-180 w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+        </svg>
+    </button>
+    <!-- Fim do botão de navegação para a esquerda -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 top-20">
         {% for imovel in imoveis %}
             {% if imovel.tipo == 'NOVO' %}
@@ -167,7 +183,7 @@
                         </div>
                         <div class="flex justify-end"> <!-- Adiciona classe para alinhar o botão à direita -->
                             <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Ver o imovel
+                                Ver o imóvel
                                 <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
                                 </svg>
@@ -178,7 +194,15 @@
             {% endif %}
         {% endfor %}
     </div>
+    <!-- Botão de navegação para a direita -->
+    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full w-10 h-10 flex items-center justify-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+        </svg>
+    </button>
+    <!-- Fim do botão de navegação para a direita -->
 </section>
+
 
 
 
@@ -348,12 +372,8 @@
   });
 </script>
 <script>
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark')
-    }
+    document.documentElement.classList.add('dark');
+    
 </script>
 </body>
 </html>

@@ -11,6 +11,8 @@ from django import forms
 from django.forms.widgets import ClearableFileInput
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from django import forms
+from .models import MaterialDeMarketing
 
 class CronometroForm(forms.Form):
     cronometro_value = forms.CharField()
@@ -208,16 +210,18 @@ class CorretorEditForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ('email', 'first_name', 'last_name', 'CRECI', 'Endereço', 'PIX_Conta', 'telefone')
+        
+class EditarProcessoForm(forms.ModelForm):
+    class Meta:
+        model = Processo
+        fields = ['cliente', 'tipo', 'proprietario', 'data_inicio', 'data_finalizacao', 'responsaveis']
 
 
 class ProcessoForm(forms.ModelForm):
     class Meta:
         model = Processo
-        fields = ['cliente', 'proprietario', 'tipo', 'imoveis', 'tags', 'responsaveis']
-    
-    # Sobrescrever o campo tags para torná-lo não obrigatório
-    tags = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'alguma-classe'}))
-
+        fields = ['cliente', 'proprietario', 'tipo', 'imoveis', 'responsaveis']
+  
     def __init__(self, *args, **kwargs):
         super(ProcessoForm, self).__init__(*args, **kwargs)
         # Outra maneira de adicionar classes do TailwindCSS diretamente no Python
@@ -321,3 +325,8 @@ class ContratoForm(forms.ModelForm):
         
 class AnexarPDFForm(forms.Form):
     pdf = forms.FileField(label='Selecione o PDF', widget=forms.ClearableFileInput(attrs={'accept': '.pdf'}))
+    
+class MaterialForm(forms.ModelForm):
+    class Meta:
+        model = MaterialDeMarketing
+        fields = ['titulo', 'descricao', 'imagem', 'arquivo']

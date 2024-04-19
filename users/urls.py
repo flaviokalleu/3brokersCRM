@@ -3,12 +3,12 @@ from django.views.generic.base import RedirectView
 from django.contrib.auth import views as auth_views
 from . import views
 from django.conf.urls.static import static
-from .views import adicionar_imovel, assistir_videos, backup_view, cliente_processo, concluir_processo, deletar_corretor, deletar_pagina_pdf, deletar_proprietario, delete_video, download_imagens_view, editar_cliente, editar_pdf, editar_proprietario, excluir_imovel,lista_imoveis, lista_processos, registrar_visualizacao, send_whatsapp_notification, nova_nota_view, upload_video, visualizar_documentacao, visualizar_pagina_pdf
+from .views import adicionar_imovel, assistir_videos, backup_view, cliente_processo, concluir_processo, deletar_corretor, deletar_pagina_pdf, deletar_proprietario, delete_video, download_imagens_view, editar_cliente, editar_imovel, editar_pdf, editar_proprietario, excluir_imovel, excluir_material,lista_imoveis, lista_processos, marketing_view, registrar_visualizacao, relatorio_clientes, send_whatsapp_notification, nova_nota_view, upload_video, visualizar_documentacao, visualizar_pagina_pdf
 from .views import financas_view, deletar_cliente, is_correspondent
 from .views import excluir_nota_notification
 from django.conf.urls.static import static
 from .views import deletar_processo,enviar_mensagem_correspondente
-from .views import settings_page, download_backup, restore_backup
+
 from django.urls import path,re_path
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns # new
@@ -65,6 +65,8 @@ urlpatterns = [
     path('editar_nota/<int:nota_id>/', views.editar_nota, name='editar_nota'),
     path('concluir_nota/<int:nota_id>/',
          views.concluir_nota, name='concluir_nota'),
+    path('processos/alterar_opcao/<int:processo_id>/<int:opcao_id>/', views.alterar_opcao, name='alterar_opcao'),
+    path('editar_imovel/<int:imovel_id>/', editar_imovel, name='editar_imovel'),
     path('deletar_nota/<int:nota_id>/', views.deletar_nota, name='deletar_nota'),
     path('processos/', lista_processos, name='lista_processos'),
 path('proprietarios/editar/<int:proprietario_id>/', editar_proprietario, name='editar_proprietario'),
@@ -125,6 +127,11 @@ path('excluir_contrato/<int:contrato_id>/', views.excluir_contrato, name='exclui
 path('download_contrato/<int:contrato_id>/', views.download_contrato, name='download_contrato'),
 path('processo/editar/<int:processo_id>/', views.editar_processo, name='editar_processo'),
 path('visualizar_documentacao/<int:proprietario_id>/', visualizar_documentacao, name='visualizar_documentacao'),
+path('marketing/', marketing_view, name='marketing'),
+path('adicionar_material/', views.adicionar_material, name='adicionar_material'),
+path('excluir_material/<int:material_id>/', excluir_material, name='excluir_material'),
+path('relatorio_clientes/', relatorio_clientes, name='relatorio_clientes'),
+path('relatorio_clientes_pdf/', views.relatorio_clientes_pdf, name='relatorio_clientes_pdf'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 #handler404 = error_404_view

@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'multiupload',
     'rest_framework',
     'django_extensions',
+    'jsonify',
+    
 ]
 
 

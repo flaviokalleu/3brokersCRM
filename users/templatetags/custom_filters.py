@@ -2,6 +2,8 @@
 from django import template
 from django.utils.safestring import SafeString
 
+from users.utils import obter_cor_opcao
+
 register = template.Library()
 
 
@@ -25,7 +27,14 @@ def access(value, arg):
         return value.get(arg)
     return None 
 
+from django import template
+from users.utils import obter_cor_opcao  # Certifique-se de substituir 'users' pelo nome do seu aplicativo e 'obter_cor_opcao' pela sua função real
 
+register = template.Library()
+
+@register.filter(name='cor_opcao')
+def cor_opcao(opcao_selecionada):
+    return obter_cor_opcao(opcao_selecionada)
 
 register = template.Library()
 

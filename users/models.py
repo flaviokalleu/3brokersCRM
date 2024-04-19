@@ -322,7 +322,7 @@ class Processo(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
     tipo = models.CharField(
         max_length=5, choices=TIPOS_PROCESSO, default='novo')
-    tags = models.CharField(max_length=255)
+    tags = models.CharField(max_length=255,null=True, blank=True)
     responsaveis = models.ManyToManyField(Corretores)
     data_inicio = models.DateField(null=True, blank=True)
     data_finalizacao = models.DateField(null=True, blank=True)
@@ -347,6 +347,10 @@ class Processo(models.Model):
             self.data_inicio = datetime.now()
 
         super().save(*args, **kwargs)
+        
+    def __str__(self):
+        # Certifique-se de que este método retorne uma string válida
+        return f"Processo {self.id}"
 
         
 class Nota(models.Model):
@@ -547,3 +551,12 @@ class Contrato(models.Model):
     nome = models.CharField(max_length=255)
     arquivo = models.FileField(upload_to='contratos/')
     data_upload = models.DateTimeField(auto_now_add=True)
+    
+class MaterialDeMarketing(models.Model):
+    titulo = models.CharField(max_length=100)
+    descricao = models.TextField()
+    imagem = models.ImageField(upload_to='marketing_images/')
+    arquivo = models.FileField(upload_to='marketing_files/')
+
+    def __str__(self):
+        return self.titulo
