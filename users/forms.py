@@ -132,7 +132,11 @@ class MultipleFileField(forms.FileField):
             result = single_file_clean(data, initial)
         return result
 
-
+class AddNoteForm(forms.Form):
+    cliente = forms.IntegerField(label='Selecione o cliente', required=True)
+    note_recipient = forms.ChoiceField(choices=[('owner', 'Proprietário'), ('broker', 'Corretor')], label='Selecione o destinatário', required=True)
+    note_text = forms.CharField(label='Digite a nota', widget=forms.Textarea(attrs={'rows': 3}), required=True)
+    
 class ClienteForm(forms.ModelForm):
     documentos = MultipleFileField(required=False)
 
@@ -316,7 +320,19 @@ class ImovelForm(forms.ModelForm):
             raise ValidationError('Valor de venda inválido')
         return valor_de_venda
 
-    
+class NovaNotaForm(forms.Form):
+    cliente_id = forms.CharField(widget=forms.HiddenInput())  # Campo oculto para o ID do cliente
+
+    note_recipient = forms.ChoiceField(
+        choices=(('owner', 'Proprietário'), ('broker', 'Corretor')),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label='Selecione o destinatário:'
+    )
+    note_text = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        label='Digite a nota:',
+        max_length=500
+    )  
     
 class ContratoForm(forms.ModelForm):
     class Meta:

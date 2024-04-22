@@ -105,6 +105,14 @@
                 <div class="container-fluid py-4">
                    <div class="flex justify-between items-center mb-6">
                       <h2 class="h2">Clientes</h2>
+                      {% if messages %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
                       <input type="text" placeholder="Pesquisar cliente..." id="searchInput" class="input-group p-2 rounded-md w-64 focus:ring-2 focus:ring-indigo-600 focus:outline-none text-black">
                    </div>
                    <div class="tab-buttons">
@@ -164,7 +172,7 @@
                         </form>
                     </div>
                     
-                    <div class="table-responsive" id="conteudoLista">
+                    <div class="table-responsive-sm" id="conteudoLista">
                         <table class="table align-items-center mb-0" id="clienteTable">
                             <thead>
                                 <tr>
@@ -354,38 +362,57 @@
                    </div>
                 </div>
                 {% for cliente in clientes %}
-                <!-- Modal para notas do cliente -->
-                <div class="modal fade" id="notaModal-{{ cliente.id }}" tabindex="-1" aria-labelledby="notaModalLabel-{{ cliente.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="notaModalLabel-{{ cliente.id }}">Notas para {{ cliente.nome }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    
-                            </div>
-                            <div class="modal-body">
-                                <ul class="list-group">
-                                    {% for nota in cliente.notas %}                                    
-                                        <li class="list-group-item">
-                                            {{ nota.data_criacao|date:"d/m/Y H:i" }} - {{ nota.texto }} - 
-                                            {% if nota.criado_por %}
-                                                {{ nota.criado_por.first_name }} {{ nota.criado_por.last_name }}
-                                            {% else %}
-                                                Usuário desconhecido
-                                            {% endif %}
-                                        </li>                                        
-                                        <a href="{% url 'concluir_processo' cliente_id=cliente.id %}" class="btn btn-success btn-sm">Concluir</a>
-                                        <button class="btn btn-danger btn-sm" onclick="deletarNota({{ nota.id }}, '{{ cliente.id }}')">Excluir</button>
-                                    {% empty %}
-                                        <li class="list-group-item">Nenhuma nota encontrada.</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            
-                        </div>
+    <!-- Modal para notas do cliente -->
+    <div class="modal fade" id="notaModal-{{ cliente.id }}" tabindex="-1" aria-labelledby="notaModalLabel-{{ cliente.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notaModalLabel-{{ cliente.id }}">Notas para {{ cliente.nome }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        {% for nota in cliente.notas %}
+                            <li class="list-group-item">
+                                {{ nota.data_criacao|date:"d/m/Y H:i" }} - {{ nota.texto }} - 
+                                {% if nota.criado_por %}
+                                    {{ nota.criado_por.first_name }} {{ nota.criado_por.last_name }}
+                                {% else %}
+                                    Usuário desconhecido
+                                {% endif %}
+                            </li>                                        
+                            <button class="btn btn-danger btn-sm" onclick="deletarNota({{ nota.id }}, '{{ cliente.id }}')">Excluir</button>
+                        {% empty %}
+                            <li class="list-group-item">Nenhuma nota encontrada.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button id="concluirBtn-{{ cliente.id }}" class="btn btn-success btn-sm" onclick="concluirProcesso('{{ cliente.id }}')">Concluir</button>
+                    <div id="spinner-{{ cliente.id }}" class="spinner-border text-primary" role="status" style="display: none;">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<script>
+    function concluirProcesso(clienteId) {
+        // Exibir o spinner
+        $('#spinner-' + clienteId).show();
+        // Aqui você pode adicionar a lógica para enviar o processo para conclusão, como uma requisição AJAX
+
+        // Após o envio bem-sucedido, recarregar a página com um parâmetro indicando que o processo foi concluído com sucesso
+        // Este é um exemplo básico, você pode ajustá-lo conforme necessário
+        setTimeout(function() {
+            // Adicione um parâmetro 'concluido=true' para indicar que o processo foi concluído
+            window.location.href = window.location.href + '?concluido=true';
+        }, 2000); // Tempo de espera em milissegundos (2 segundos neste exemplo)
+    }
+</script>
+
             
              <script>
                 var win = navigator.platform.indexOf('Win') > -1;

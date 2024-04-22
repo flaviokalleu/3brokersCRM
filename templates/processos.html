@@ -119,7 +119,9 @@
                         </button>
                         {% endif %}   
                         <a href="{% static 'arquivopdf/TERMO.pdf' %}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded cursor-pointer mr-4" download>Baixar Ficha</a>
-                    </div>                    
+                    </div>  
+                   
+                                  
                     
                     <div class="table-responsive" id="conteudoLista">
                         <table class="table table-striped table-hover text-center">
@@ -127,13 +129,12 @@
                                 <tr>
                                     <th>Cliente</th>
                                     <th>Tipo</th>
+                                    <th>Status</th>
                                     <th>Notas</th>
-                                    <th>Detalhes do processo</th>
+                                    <th>Corretor Responsável</th>                                     
                                     <th>Proprietário</th>
                                     <th>Data de Início</th>
-                                    <th>Data de Finalização</th>
-                                    <th>Status</th>
-                                    <th>Corretor Responsável</th>
+                                    <th>Data de Finalização</th>                                                                      
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -143,22 +144,6 @@
                                     <td class="align-middle text-white">{{ processo.cliente.nome }}</td>
                                     <td class="align-middle text-white">{{ processo.tipo }}</td>
                                     <td class="align-middle text-white">
-                                        {% if processo.num_notas > 0 %}
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#notaModal-{{ processo.cliente.id }}">
-                                            <span class="badge {% if processo.num_notas_nao_concluidas > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ processo.num_notas }}</span>
-                                        </a>
-                                        {% else %}
-                                        <span class="badge bg-secondary">0</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="align-middle text-white">
-                                        <a href="{% if processo.cliente %}{% url 'detalhes_do_processo' cliente_id=processo.cliente.id processo_id=processo.id %}{% endif %}" class="btn btn btn-danger btn-sm">Detalhes do processo</a>
-                                    </td>
-                                    
-                                    <td class="align-middle text-white">{{ processo.proprietario.nome }}</td>
-                                    <td class="align-middle text-white">{{ processo.data_inicio }}</td>
-                                    <td class="align-middle text-white">{{ processo.data_finalizacao }}</td>
-                                    <td class="align-middle text-white">
                                         {% if processo.opcoes_selecionadas %}
                                             {% with processo.opcoes_selecionadas.last as ultima_opcao %}
                                                 <span class="badge bg-primary">{{ ultima_opcao.opcao }}</span>
@@ -166,8 +151,17 @@
                                         {% else %}
                                             <span class="badge bg-secondary">0</span>
                                         {% endif %}
-                                    </td>
-
+                                    </td>   
+                                    <td class="align-middle text-white">
+                                       
+                                        {% if processo.num_notas > 0 %}
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#notaModal-{{ processo.cliente.id }}">
+                                            <span class="badge {% if processo.num_notas_nao_concluidas > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ processo.num_notas }}</span>
+                                        </a>
+                                        {% else %}
+                                        <span class="badge bg-secondary">0</span>
+                                        {% endif %}
+                                    </td>  
                                     <td class="align-middle text-white">
                                         {% for responsavel in processo.responsaveis.all %}
                                         {{ responsavel.first_name }} {{ responsavel.last_name }}
@@ -176,6 +170,9 @@
                                         Nenhum responsável
                                         {% endfor %}
                                     </td>
+                                    <td class="align-middle text-white">{{ processo.proprietario.nome }}</td>
+                                    <td class="align-middle text-white">{{ processo.data_inicio }}</td>
+                                    <td class="align-middle text-white">{{ processo.data_finalizacao }}</td>
                                     <td class="align-middle text-white">
                                         <div class="btn-group">
                                             <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -189,6 +186,9 @@
                                                         Excluir processo
                                                     </button>
                                                 </form>
+                                                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#addNoteModal" data-cliente-id="{{ processo.cliente.id }}" data-processo-id="{{ processo.id }}">
+                                                    Adicionar Nota
+                                                </button>
                                                 <form method="POST" action="{% url 'finalizar_processo' processo.id %}">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="processo_id" value="{{ processo.id }}">
@@ -198,11 +198,13 @@
                                             </div>
                                         </div>
                                     </td>
+                                    
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+                    
                     
                     
                     
@@ -220,26 +222,27 @@
                     <div class="container-fluid">
                         <ul class="list-group">
                             {% for nota in processo.get_notas %}
-                                <li id="nota{{ nota.id }}" class="list-group-item mb-3">
-                                    {{ nota.texto }}
-                                    {% if user.is_staff %}
-                                        <div class="btn-group float-right">
-                                            <form method="POST" action="{% url 'enviarmensagemcorrespondente' %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="nota_id" value="{{ nota.id }}">
-                                                <input type="hidden" name="processo_id" value="{{ processo.id }}">
-                                                <button type="submit" class="btn btn-primary btn-sm">Enviar Mensagem</button>
-                                            </form>
-                                            <form action="{% url 'deletar_nota' nota.id %}" method="post" style="display: inline;">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="processo_id" value="{{ processo.id }}">
-                                                <button type="submit" class="btn btn-danger btn-sm">Excluir Nota</button>
-                                            </form>
-                                        </div>
-                                    {% endif %}
-                                </li>
+                            <li id="nota{{ nota.id }}" class="list-group-item mb-3">
+                                {{ nota.texto }}
+                                {% if user.is_staff %}
+                                <div class="btn-group float-right">
+                                    <form method="POST" action="{% url 'enviarmensagemcorrespondente' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="nota_id" value="{{ nota.id }}">
+                                        <input type="hidden" name="processo_id" value="{{ processo.id }}">
+                                        <button type="submit" class="btn btn-primary btn-sm">Enviar Mensagem</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'deletar_nota' nota.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="processo_id" value="{{ processo.id }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Excluir Nota</button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </li>
                             {% endfor %}
                         </ul>
+                        
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -264,14 +267,8 @@
                 <!-- Formulário de adição de processo -->
                 <form method="POST" action="{% url 'add_processo' %}">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label for="cliente" class="text-white">Cliente</label>
-                        <select class="form-control" id="cliente" name="cliente">
-                            {% for cliente in clientes %}
-                            <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <!-- Campo oculto para armazenar o ID do cliente -->
+                    <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
                     <div class="form-group">
                         <label for="proprietario">Proprietário</label>
                         <select class="form-control" id="proprietario" name="proprietario">
@@ -313,6 +310,68 @@
         </div>
     </div>
 </div>
+
+
+<!-- Notas -->
+<div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNoteModalLabel">Adicionar Nota</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulário para adicionar uma nota -->
+                <form method="post" id="addNoteForm">
+                    {% csrf_token %}
+                    Cliente ID: {{ processo.cliente.id }}
+                    Processo ID: {{ processo.id }}
+                    <!-- Dropdown para selecionar cliente -->
+                    <div class="form-group">
+                        <label for="cliente">Selecione o cliente:</label>
+                        <select class="form-control" id="cliente" name="cliente" required>
+                            <option value="">Selecione o cliente</option>
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Dropdown para selecionar destinatário -->
+                    <div class="form-group">
+                        <label for="noteRecipient">Selecione o destinatário:</label>
+                        <select class="form-control" id="noteRecipient" name="note_recipient" required>
+                            <option value="owner">Proprietário</option>
+                            <option value="broker">Corretor</option>
+                        </select>
+                    </div>
+                    <!-- Área de texto para inserir a nota -->
+                    <div class="form-group">
+                        <label for="noteText">Digite a nota:</label>
+                        <textarea class="form-control" id="noteText" name="note_text" rows="3" required></textarea>
+                    </div>
+                    <!-- Botão de envio -->
+                    <button type="submit" class="btn btn-primary">Enviar Nota</button>
+                </form>
+            </div>            
+            
+        </div>
+    </div>
+</div>
+<script>
+    $('#addNoteModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Botão que acionou o modal
+        var clienteId = button.data('cliente-id'); // Extrai o ID do cliente do botão
+        var processoId = button.data('processo-id'); // Extrai o ID do processo do botão
+        var modal = $(this);
+        
+        // Define a ação do formulário com os IDs do cliente e do processo
+        modal.find('#addNoteForm').attr('action', '/nova-nota/' + clienteId + '/' + processoId + '/');
+    });
+</script>
+
+
 <!-- Bootstrap JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>

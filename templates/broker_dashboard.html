@@ -424,20 +424,26 @@
                          </thead>
                          <tbody>
                            {% for processo in processos %}
-                               
-                                   <tr>
-                                       <td class="px-4 py-2">
-                                           <a href="#">
+                               <tr>
+                                   <td class="px-4 py-2">
+                                       {% if processo.cliente %}
+                                           <a href="{% url 'detalhes_do_processo' cliente_id=processo.cliente.id processo_id=processo.id %}">
                                                {{ processo.cliente.nome }}
                                            </a>
-                                       </td>
-                                       <td class="px-4 py-2">
-                                           <div class="progress">
-                                               <div class="progress-bar" role="progressbar" style="width: {{ processo.progresso }}%;" aria-valuenow="{{ processo.progresso }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                           </div>
-                                       </td>
-                                   </tr>
-                               
+                                       {% else %}
+                                           Processo sem cliente associado
+                                       {% endif %}
+                                   </td>
+                                   <td class="px-4 py-2">
+                                       {% if processo.opcoes_selecionadas %}
+                                       {% with processo.opcoes_selecionadas.last as ultima_opcao %}
+                                           <span class="badge bg-primary">{{ ultima_opcao.opcao }}</span>
+                                       {% endwith %}
+                                   {% else %}
+                                       <span class="badge bg-secondary">0</span>
+                                   {% endif %}
+                                   </td>
+                               </tr>
                            {% endfor %}
                        </tbody>
                      </table>

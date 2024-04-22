@@ -164,17 +164,11 @@ class TipoProcesso(models.Model):
 
     def obter_opcoes(self):
         if self.nome == 'novo':
-            return ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep', 
-        'Documentação imóvel', 'Damp', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Itbi', 
-        'Registro', 'Comissão', 'Receber valor', 'Cartório', 'Entrega de chaves']
+            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizar']
 
         elif self.nome == 'usado':
-            return ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep', 
-        'Documentação imóvel', 'Damp', 'Pedido avaliação', 'Pag. avaliação', 'Avaliação feita', 'Avaliação no sistema', 
-        'Vistoria engenharia', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Entrada Itbi', 
-        'Pagamento Itbi', 'Recolhimento Itbi ass', 'Registro', 'Exigência', 'Registrado/Averbado', 'Matrícula Atualizada', 
-        'Conformidade Garantia', 'Garantia Inconforme', 'Garantia Conforme', 'Recebimento Valores', 'Comissão', 
-        'Receber valor', 'Cartório', 'Entrega de chaves']
+            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizar']
+
 
         elif self.nome == 'Agio':
             return ['Escolha Unidade', 'Pagamento sinal', 'Verificação Parcelas', 'Verificação Cond', 'Verificação IPTU', 

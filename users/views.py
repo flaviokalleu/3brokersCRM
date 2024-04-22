@@ -20,7 +20,7 @@ import json
 from django.shortcuts import render, redirect
 
 from users.backup.backup import perform_backup
-from .forms import ClienteForm2, ContratoForm, EditarProcessoForm, ImovelForm, MaterialForm, ProcessoForm, ProprietarioEditForm, UploadBackupForm, UserUpdateForm, VideoForm
+from .forms import AddNoteForm, ClienteForm2, ContratoForm, EditarProcessoForm, ImovelForm, MaterialForm, ProcessoForm, ProprietarioEditForm, UploadBackupForm, UserUpdateForm, VideoForm
 from django.core.management import call_command
 from .models import Backup, Contrato, Imovel, MaterialDeMarketing, Nota_notification, Tag, Video, VideoView
 from django.http import HttpResponse
@@ -382,6 +382,8 @@ def correspondent_dashboard(request):
     for processo in processos:
         processo.progresso = calcular_progresso(
             processo, processo.id, processo.cliente)
+        if processo.cliente:
+            processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
 
     data_referencia = datetime.now() - timedelta(days=7)
     total_clientes_recentes = Cliente.objects.filter(
@@ -506,7 +508,7 @@ def lista_de_clientes(request):
         meses.append({'nome_mes': nome_mes, 'qtd_clientes': qtd_clientes})
 
     todos_corretores = Corretores.objects.all()
-
+   
     contexto = {
         'clientes': todos_clientes,
         'clientes_json': json.dumps(clientes_serializados),
@@ -515,6 +517,9 @@ def lista_de_clientes(request):
         'meses': meses,
         'corretores': todos_corretores,
     }
+
+    if request.GET.get('concluido') == 'true':
+        messages.success(request, "A mensagem Foi enviada com sucesso!")
 
     return render(request, 'lista_clientes.html', contexto)
 
@@ -1031,7 +1036,8 @@ def broker_dashboard(request):
     
      # Filtra os processos associados ao corretor
     processos = Processo.objects.filter(responsaveis=corretor).order_by('-data_inicio')
-
+    
+        
 
     
     processos_em_andamento = [
@@ -1048,6 +1054,8 @@ def broker_dashboard(request):
     for processo in processos:
         processo.progresso = calcular_progresso(
             processo, processo.id, processo.cliente)
+        if processo.cliente:
+            processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
 
     data_referencia = datetime.now() - timedelta(days=7)
     total_clientes_recentes = Cliente.objects.filter(
@@ -1093,23 +1101,15 @@ def broker_dashboard(request):
 
     return render(request, 'broker_dashboard.html', context)
 
+
+#administrador
 @user_passes_test(is_admin)
 @login_required
 def admin_dashboard(request):
     # Coleta de dados
     context = {}  # Crie a variável context aqui
     fixed_expenses = get_fixed_expenses(request.user)
-    dias = [i for i in range(1, 32)]
-
-    despesas = Transaction.objects.filter(tipo='DESPESA').aggregate(
-        total=models.Sum('valor'))['total'] or 0
-    receitas = Transaction.objects.filter(tipo='RECEITA').aggregate(
-        total=models.Sum('valor'))['total'] or 0
-    total_receitas = Transaction.objects.filter(
-        user=request.user, tipo='RECEITA').aggregate(total=Sum('valor'))['total'] or 0
-    total_despesas = Transaction.objects.filter(
-        user=request.user, tipo='DESPESA').aggregate(total=Sum('valor'))['total'] or 0
-    saldo = receitas - despesas
+    dias = [i for i in range(1, 32)]    
 
     # Obter a contagem de vários modelos
     total_corretores = Corretores.objects.count()
@@ -1195,56 +1195,7 @@ def admin_dashboard(request):
             (total_current - total_last_year) / total_last_year) * 100
     except ZeroDivisionError:
         percent_change = 0
-
-    if request.method == 'POST':
-        form_type = request.POST.get('form_type')
-        
-
-        if form_type == 'transacao':
-            
-            description = request.POST.get('description')
-            tipo = request.POST.get('tipo')
-            valor = request.POST.get('valor')
-
-            if not (description and tipo and valor):
-                messages.error(request, "Por favor, preencha todos os campos.")
-                return redirect('admin_dashboard')
-
-            if tipo == "DESPESA_FIXA":
-                due_day = request.POST.get('due_day') or 1
-                FixedExpense.objects.create(description=description, due_day=int(
-                    due_day), amount=valor, user=request.user)
-                messages.success(
-                    request, "Despesa fixa adicionada com sucesso.")
-            else:
-                Transaction.objects.create(
-                    description=description, tipo=tipo, valor=valor, user=request.user)
-                messages.success(request, "Transação adicionada com sucesso.")
-
-        elif form_type == 'vendas_corretor':
-           
-            nome = request.POST.get('nome')
-            valor_total_pagar = request.POST.get('valor_total_pagar')
-            valor_pago = request.POST.get('valor_pago')
-            nome_corretor = request.POST.get('nome_corretor')
-            valor_faltante = request.POST.get('valor_faltante')
-            tipo = request.POST.get('tipo')
-
-            try:
-                VendaCorretor.objects.create(
-                    nome=nome,
-                    valor_total_pagar=float(valor_total_pagar),
-                    valor_pago=float(valor_pago),
-                    nome_corretor=nome_corretor,
-                    valor_faltante=float(valor_faltante),
-                    tipo=tipo
-                )
-                messages.success(
-                    request, "Venda por corretor adicionada com sucesso.")
-            except Exception as e:
-                messages.error(request, f"Erro ao adicionar venda: {e}")
-
-        return redirect('admin_dashboard')
+    
 
     vendas_corretores_list = VendaCorretor.objects.all()
     paginator = Paginator(vendas_corretores_list, 5)
@@ -1287,11 +1238,8 @@ def admin_dashboard(request):
             'total': entry['total'],
             'month': entry['month']
         }
-        for entry in top_corretores_mes_atual
-    ]
+        for entry in top_corretores_mes_atual    ]
 
-    # Imprima informações para depuração
-    
 
     processos = Processo.objects.all().order_by('-data_inicio')
 
@@ -1304,8 +1252,19 @@ def admin_dashboard(request):
     for processo in processos:
         processo.progresso = calcular_progresso(
             processo, processo.id, processo.cliente)
-
+    for processo in processos:
+        processo.progresso = int(calcular_progresso(processo, processo.id, processo.cliente))
+        processo.num_notas = Nota_notification.objects.filter(processo=processo).count()
+        processo.num_notas_nao_concluidas = Nota_notification.objects.filter(processo=processo, nova=True).count()
+        if processo.cliente:
+            processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
     
+    tipo_processo = TipoProcesso.objects.get(nome=processo.tipo)
+    opcoes_disponiveis = [opcao.strip() for opcao in tipo_processo.obter_opcoes()]
+    opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
+
+    opcoes_selecionadas_list = [(opcao.opcao.strip(), opcao.data_selecionada.strftime('%d/%m/%Y')) for opcao in opcoes_selecionadas]
+    opcoes_selecionadas_dict = {opcao.opcao.strip(): opcao.data_selecionada.strftime('%d/%m/%Y') for opcao in opcoes_selecionadas}
 
     context = {
         'top_corretores_list': top_corretores_list,
@@ -1327,20 +1286,34 @@ def admin_dashboard(request):
         'recent_transactions': recent_transactions,
         'total_corretores': total_corretores,
         'total_clientes': total_clientes,
-        'total_correspondentes': total_correspondentes,
-        'saldo': saldo,
-        'despesas': despesas,
-        'receitas': receitas,
+        'total_correspondentes': total_correspondentes,        
         'fixed_expenses': fixed_expenses,
-        'dias': dias,
-        'total_receitas': total_receitas,
-        'total_despesas': total_despesas,
+        'dias': dias,        
         'notas_privadas': NotaPrivada.objects.filter(user=request.user).order_by('-data'),
         'all_statuses': all_statuses,
+        'opcoes_selecionadas': opcoes_selecionadas,
+        'opcoes_selecionadas_list': opcoes_selecionadas_list,
+        'opcoes_disponiveis': opcoes_disponiveis,
+        'opcoes_selecionadas_dict': opcoes_selecionadas_dict,
         'username': request.user.username,
         'vendas_corretores': vendas_corretores,
         'clientes': clientes
     }
+    # Obter clientes recentes deste mês
+    current_date = now()
+    current_month = current_date.month
+    current_year = current_date.year
+    start_of_month = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end_of_month = start_of_month.replace(month=start_of_month.month % 12 + 1, day=1) - timedelta(days=1)
+    
+    recent_clients = Cliente.objects.filter(
+        data_de_criacao__gte=start_of_month,
+        data_de_criacao__lte=end_of_month
+    )
+    total_recent_clients = recent_clients.count()
+
+    context['total_recent_clients'] = total_recent_clients
+    context['recent_clients'] = recent_clients
 
     return render(request, 'admin_dashboard.html', context)
 
@@ -1850,9 +1823,11 @@ def concluir_nota(request, nota_id):
 
 
 def deletar_nota(request, nota_id):
-    nota = get_object_or_404(NotaPrivada, id=nota_id)
+    nota = get_object_or_404(Nota_notification, id=nota_id)
     nota.delete()
-    return redirect('lista_proprietarios')
+    # Após excluir a nota, redirecione para uma página adequada
+    return redirect('lista_processos')
+
 
 
 @login_required
@@ -2342,7 +2317,7 @@ def lista_processos(request):
         else:
             processos = Processo.objects.none()  # Retorna uma queryset vazia se o proprietário não for encontrado
 
-
+    add_note_form = AddNoteForm()
     tipo_filtro = request.GET.get('tipo_processo', '')
     responsavel_filtro = request.GET.get('filtroResponsaveis', '')
     progresso_filtro = request.GET.get('progresso', '')
@@ -2388,7 +2363,20 @@ def lista_processos(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Processo editado com sucesso.')
+    # Se o processo_id e o cliente_id não estiverem vazios, redirecione para a página 'nova_nota'
+    processo_id = request.GET.get('processo_id', None)
+    cliente_id = request.GET.get('cliente_id', None)
+    if processo_id and cliente_id:
+        # Certifique-se de importar a função 'redirect' do Django
+        return redirect('nova_nota', cliente_id=cliente_id, processo_id=processo_id)
 
+    # Se o método de requisição for POST e o formulário for válido, salve o processo e redirecione para a mesma página
+    if request.method == "POST":
+        form = ProcessoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Processo editado com sucesso.')
+            return redirect('lista_processos')  # Redireciona para a mesma página
     tipo_processo_opcoes = {
         'novo': ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep',
                  'Documentação imóvel', 'Damp', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Itbi',
@@ -2407,18 +2395,18 @@ def lista_processos(request):
     opcoes_por_tipo_processo_json = json.dumps(opcoes_por_tipo_processo)
     
     return render(request, 'processos.html', {
-        'processos': processos,
-        'total_processos': total_processos,
-        'tipos_processo': tipos_processo,
-        'tipo_processo_opcoes': tipo_processo_opcoes,
-        'clientes': clientes,
-        'total_contatos': total_contatos,
-        'corretores': corretores_group.user_set.all() if corretores_group else [],
-        'username': request.user.username,
-        'proprietarios': proprietarios,
-        'opcoes_por_tipo_processo_json': opcoes_por_tipo_processo_json,
-        'imoveis_disponiveis': imoveis_disponiveis,
-    })
+    'processos': processos,
+    'total_processos': total_processos,
+    'tipos_processo': tipos_processo,
+    'tipo_processo_opcoes': tipo_processo_opcoes,
+    'clientes': clientes,
+    'total_contatos': total_contatos,
+    'corretores': corretores_group.user_set.all() if corretores_group else [],
+    'username': request.user.username,
+    'proprietarios': proprietarios,
+    'opcoes_por_tipo_processo_json': opcoes_por_tipo_processo_json,
+    'imoveis_disponiveis': imoveis_disponiveis,
+})
     
 
 def alterar_opcao(request, processo_id, opcao_id):
@@ -2601,9 +2589,11 @@ def nova_nota_view(request, cliente_id, processo_id):
             for corretor in processo.responsaveis.all():
                 send_whatsapp_notification(corretor, note_text)
 
-        return redirect('detalhes_do_processo', cliente_id=cliente.id, processo_id=processo.id)
+        return redirect('nova_nota', cliente_id=cliente.id, processo_id=processo.id)
 
-    return render(request, 'cliente_processo.html', {'cliente': cliente, 'processo': processo})
+
+    return render(request, 'processos.html', {'cliente': cliente, 'processo': processo})
+
 
 
 
@@ -3178,15 +3168,37 @@ def relatorio_clientes(request):
 
     # Contar o número de clientes criados este mês
     novos_clientes_mes = clientes_mes.count()
+    processos_em_aberto = Processo.objects.filter(data_finalizacao__isnull=True).count()
+    clientes_aguardando_aprovacao = clientes.filter(status='aguardando_aprovacao').count()
+    clientes_documentacao_pendente = clientes.filter(status='documentacao_pendente').count()
+    clientes_aguardando_cancelamento_qv = clientes.filter(status='aguardando_cancelamento_qv').count()
+    clientes_cliente_aprovado = clientes.filter(status='cliente_aprovado').count()
+    clientes_reprovado = clientes.filter(status='reprovado').count()
+    clientes_proposta_apresentada = clientes.filter(status='proposta_apresentada').count()
+    clientes_visita_efetuada = clientes.filter(status='visita_efetuada').count()
+    clientes_nao_deu_continuidade = clientes.filter(status='nao_deu_continuidade').count()
+    clientes_venda_concluida = clientes.filter(status='venda_concluida').count()
+    clientes_fechamento_proposta = clientes.filter(status='fechamento_proposta').count()
 
     contexto = {
-        'clientes': clientes,
-        'total_clientes': total_clientes,
-        'clientes_aprovados': clientes_aprovados,
-        'clientes_reprovados': clientes_reprovados,
-        'novos_clientes_mes': novos_clientes_mes,
-        'corretores': corretores,  # Passar os corretores para o template
-    }
+    'clientes': clientes,
+    'total_clientes': total_clientes,
+    'clientes_aprovados': clientes_aprovados,
+    'clientes_reprovados': clientes_reprovados,
+    'novos_clientes_mes': novos_clientes_mes,
+    'processos_em_aberto': processos_em_aberto,
+    'clientes_aguardando_aprovacao': clientes_aguardando_aprovacao,
+    'clientes_documentacao_pendente': clientes_documentacao_pendente,
+    'clientes_aguardando_cancelamento_qv': clientes_aguardando_cancelamento_qv,
+    'clientes_cliente_aprovado': clientes_cliente_aprovado,
+    'clientes_reprovado': clientes_reprovado,
+    'clientes_proposta_apresentada': clientes_proposta_apresentada,
+    'clientes_visita_efetuada': clientes_visita_efetuada,
+    'clientes_nao_deu_continuidade': clientes_nao_deu_continuidade,
+    'clientes_venda_concluida': clientes_venda_concluida,
+    'clientes_fechamento_proposta': clientes_fechamento_proposta,
+    'corretores': corretores,  # Passar os corretores para o template
+}
 
     return render(request, 'relatorio_clientes.html', contexto)
 
