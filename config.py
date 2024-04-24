@@ -1,3 +1,3 @@
-CONVENIO = 'numero do conveni'
-USERNAME = 'usuario'
-PASSWORD = 'senha'
+CONVENIO = 'user'
+USERNAME = 'senha'
+PASSWORD = 'pass'
