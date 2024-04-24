@@ -98,10 +98,8 @@
                                         <label for="filtroOpcoes" class="form-label">Opções Selecionadas:</label>
                                         <select id="filtroOpcoes" name="filtroOpcoes" class="form-select">
                                             <option value="">Todas as opções</option>
-                                            {% for processo in processos %}
-                                                {% for opcao in processo.opcoes_selecionadas.all %}
-                                                    <option value="{{ opcao.opcao }}">{{ opcao.opcao }}</option>
-                                                {% endfor %}
+                                            {% for opcao in opcoes_unicas %}
+                                                <option value="{{ opcao }}">{{ opcao }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>

@@ -913,19 +913,7 @@ def consulta_cpf(request):
 @login_required
 @user_passes_test(is_corretor)
 def broker_dashboard(request):
-    # Coleta de dados
-    fixed_expenses = get_fixed_expenses(request.user)
-    dias = [i for i in range(1, 32)]
-
-    despesas = Transaction.objects.filter(tipo='DESPESA').aggregate(
-        total=models.Sum('valor'))['total'] or 0
-    receitas = Transaction.objects.filter(tipo='RECEITA').aggregate(
-        total=models.Sum('valor'))['total'] or 0
-    total_receitas = Transaction.objects.filter(
-        user=request.user, tipo='RECEITA').aggregate(total=Sum('valor'))['total'] or 0
-    total_despesas = Transaction.objects.filter(
-        user=request.user, tipo='DESPESA').aggregate(total=Sum('valor'))['total'] or 0
-    saldo = receitas - despesas
+    
     corretor = request.user
     # Obter a contagem de vários modelos
     total_corretores = Corretores.objects.count()
@@ -936,15 +924,14 @@ def broker_dashboard(request):
     
     total_correspondentes = Correspondente.objects.count()
     recent_transactions = Transaction.objects.all().order_by('-id')[:8]
-
-    total_proprietarios = Proprietario.objects.count()
+   
     total_contatos = Contato.objects.count()
     contatos_hoje = Contato.objects.filter(
         data_registro=datetime.now().date()).count()
     contatos_7_dias = Contato.objects.filter(
         data_registro__gte=datetime.now() - timedelta(days=7)).count()
 
-    status_counts = Cliente.objects.values(
+    status_counts = Cliente.objects.filter(corretor=corretor).values(
         'status').annotate(total=Count('status'))
     status_counts_dict = {item['status']: item['total']
                           for item in status_counts}
@@ -954,25 +941,29 @@ def broker_dashboard(request):
         for choice in Cliente.STATUS_CHOICES
     ]
 
-    # Converta STATUS_CHOICES em um dicionário para fácil acesso
-    status_dict = dict(Cliente.STATUS_CHOICES)
+    # Filtrar apenas os clientes vinculados ao corretor
+    clientes = clientes_do_corretor
 
     # Gerar dados mensais
-    monthly_counts = Cliente.objects.filter(data_de_criacao__isnull=False).annotate(
+    monthly_counts = clientes.annotate(
         month=ExtractMonth('data_de_criacao'),
         year=ExtractYear('data_de_criacao')
     ).values('month', 'year').annotate(total=Count('id')).order_by('year', 'month')
 
     # Gerar dados anuais
-    annual_counts = Cliente.objects.filter(data_de_criacao__isnull=False).annotate(
+    annual_counts = clientes.annotate(
         year=ExtractYear('data_de_criacao')
     ).values('year').annotate(total=Count('id')).order_by('year')
+
+    # Converter os QuerySets em JSON
+    monthly_data_json = list(monthly_counts)
+    annual_data_json = list(annual_counts)
 
     # Converter os QuerySets em JSON
     monthly_data_json = json.dumps(list(monthly_counts))
     annual_data_json = json.dumps(list(annual_counts))
 
-# Mapeia o número do mês para o nome do mês
+    # Mapeia o número do mês para o nome do mês
     months = {
         1: 'Jan', 2: 'Fev', 3: 'Mar', 4: 'Abr', 5: 'Mai', 6: 'Jun',
         7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'
@@ -993,11 +984,7 @@ def broker_dashboard(request):
         'data': [entry.get('total', 0) for entry in monthly_counts]
     }
 
-    chart_data_json = json.dumps(chart_data)
-
-    today = datetime.now().day
-    expenses_due_soon = [expense for expense in fixed_expenses if 0 < (
-        expense.due_day - today) <= 3]
+    chart_data_json = json.dumps(chart_data)    
 
     current_year = datetime.now().year
     last_year = current_year - 1
@@ -1005,23 +992,23 @@ def broker_dashboard(request):
 
     total_current = Cliente.objects.filter(
         data_de_criacao__year=current_year,
-        data_de_criacao__month=current_month
+        data_de_criacao__month=current_month,
+        corretor=corretor
     ).count()
     total_last_year = Cliente.objects.filter(
         data_de_criacao__year=last_year,
-        data_de_criacao__month=current_month
+        data_de_criacao__month=current_month,
+        corretor=corretor
     ).count()
 
     try:
         percent_change = (
             (total_current - total_last_year) / total_last_year) * 100
     except ZeroDivisionError:
-        percent_change = 0
+        percent_change = 0    
 
-    vendas_corretores = VendaCorretor.objects.all().order_by('-id')
-
-   # Calcula os top 4 status
-    top_statuses_data = Cliente.objects.values('status').annotate(
+    # Calcula os top 4 status
+    top_statuses_data = Cliente.objects.filter(corretor=corretor).values('status').annotate(
         total=Count('status')).order_by('-total')[:4]
 
     top_statuses = [
@@ -1033,14 +1020,11 @@ def broker_dashboard(request):
         for item in top_statuses_data
     ]
 
-    clientes = Cliente.objects.filter(corretor=corretor)
+    clientes = clientes_do_corretor
     
-     # Filtra os processos associados ao corretor
+    # Filtra os processos associados ao corretor
     processos = Processo.objects.filter(responsaveis=corretor).order_by('-data_inicio')
-    
-        
 
-    
     processos_em_andamento = [
         processo for processo in processos if processo.data_finalizacao is None]
     total_processos_em_andamento = len(processos_em_andamento)
@@ -1060,9 +1044,9 @@ def broker_dashboard(request):
 
     data_referencia = datetime.now() - timedelta(days=7)
     total_clientes_recentes = Cliente.objects.filter(
-    corretor=corretor,
-    data_de_criacao__gte=data_referencia
-).count()
+        corretor=corretor,
+        data_de_criacao__gte=data_referencia
+    ).count()
 
     context = {
         'total_clientes_recentes': total_clientes_recentes,
@@ -1073,27 +1057,17 @@ def broker_dashboard(request):
         'monthly_data_json': monthly_data_json,
         'annual_data_json': annual_data_json,
         'chart_data_json': chart_data_json,
-        'chart_data': chart_data,
-        'expenses_due_soon': expenses_due_soon,
-        'total_proprietarios': total_proprietarios,
+        'chart_data': chart_data,       
         'total_contatos': total_contatos,
         'contatos_hoje': contatos_hoje,
         'contatos_7_dias': contatos_7_dias,
         'recent_transactions': recent_transactions,
         'total_corretores': total_corretores,
         'total_clientes': total_clientes,
-        'total_correspondentes': total_correspondentes,
-        'saldo': saldo,
-        'despesas': despesas,
-        'receitas': receitas,
-        'fixed_expenses': fixed_expenses,
-        'dias': dias,
-        'total_receitas': total_receitas,
-        'total_despesas': total_despesas,
+        'total_correspondentes': total_correspondentes,        
         'notas_privadas': NotaPrivada.objects.filter(user=request.user).order_by('-data'),
         'all_statuses': all_statuses,
         'username': request.user.username,
-        'vendas_corretores': vendas_corretores,
         'top_statuses': top_statuses,
         'status_choices': dict(Cliente.STATUS_CHOICES),
         'clientes': clientes,
@@ -1156,7 +1130,7 @@ def admin_dashboard(request):
         1: 'Jan', 2: 'Fev', 3: 'Mar', 4: 'Abr', 5: 'Mai', 6: 'Jun',
         7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'
     }
-
+    
     # Corrige os rótulos do gráfico
     chart_labels = []
     for entry in monthly_counts:
@@ -1199,7 +1173,7 @@ def admin_dashboard(request):
     
 
     vendas_corretores_list = VendaCorretor.objects.all()
-    paginator = Paginator(vendas_corretores_list, 5)
+    paginator = Paginator(vendas_corretores_list, 15)
 
     page_number = request.GET.get('page')
     vendas_corretores = paginator.get_page(page_number)
@@ -1230,7 +1204,7 @@ def admin_dashboard(request):
         ).annotate(
             total=Count('id'),
             month=ExtractMonth('data_de_criacao')
-        ).order_by('-total')[:5]
+        ).order_by('-total')[:15]
 
     # Criar a lista final de top corretores
     top_corretores_list = [
@@ -1243,12 +1217,19 @@ def admin_dashboard(request):
 
 
     processos = Processo.objects.all().order_by('-data_inicio')
+    processos_em_andamento = Processo.objects.filter(
+    data_finalizacao__isnull=True
+).exclude(
+    id__in=OpcaoSelecionada.objects.filter(opcao='Finalizado').values_list('processo_id', flat=True)
+).order_by('data_inicio')
 
     processos_em_andamento = [
         processo for processo in processos if processo.data_finalizacao is None]
     total_processos_em_andamento = len(processos_em_andamento)
     
-
+    for processo in processos_em_andamento:
+        # Aqui você pode acessar as opções selecionadas para cada processo
+        opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
     # Calcular o progresso para cada processo
     for processo in processos:
         processo.progresso = calcular_progresso(
@@ -1609,7 +1590,7 @@ def financas_view(request):
         ).annotate(
             total=Count('id'),
             month=ExtractMonth('data_de_criacao')
-        ).order_by('-total')[:5]
+        ).order_by('-total')[:15]
 
     # Criar a lista final de top corretores
     top_corretores_list = [
@@ -2439,30 +2420,20 @@ def lista_processos(request):
             form.save()
             messages.success(request, 'Processo editado com sucesso.')
             return redirect('lista_processos')  # Redireciona para a mesma página
-    
-    tipo_processo_opcoes = {
-        'novo': ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep',
-                 'Documentação imóvel', 'Damp', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Itbi',
-                 'Registro', 'Comissão', 'Receber valor', 'Cartório', 'Entrega de chaves'],
-        'usado': ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep',
-                  'Documentação imóvel', 'Damp', 'Pedido avaliação', 'Pag. avaliação', 'Avaliação feita', 'Avaliação no sistema',
-                  'Vistoria engenharia', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Entrada Itbi',
-                  'Pagamento Itbi', 'Recolhimento Itbi ass', 'Registro', 'Exigência', 'Registrado/Averbado', 'Matrícula Atualizada',
-                  'Conformidade Garantia', 'Garantia Inconforme', 'Garantia Conforme', 'Recebimento Valores', 'Comissão',
-                  'Receber valor', 'Cartório', 'Entrega de chaves'],
-        'Agio': ['Escolha Unidade', 'Pagamento sinal', 'Verificação Parcelas', 'Verificação Cond', 'Verificação IPTU',
-                 'Agendamento Cartório', 'Cessão de Direitos', 'Procuração', 'Doc identificação Autenticado',
-                 'Pagamento Agio', 'Recebimento comissão', 'Receber valor', 'Cartório', 'Entrega de chaves']
-    }
+    opcoes_unicas = set()
+    for processo in processos:
+        opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
+        for opcao in opcoes_selecionadas:
+                opcoes_unicas.add(opcao.opcao)
 
     opcoes_por_tipo_processo_json = json.dumps(opcoes_por_tipo_processo)
 
     return render(request, 'processos.html', {
         'processos': processos,
         'total_processos': total_processos,
-        'tipos_processo': tipos_processo,
-        'tipo_processo_opcoes': tipo_processo_opcoes,
+        'tipos_processo': tipos_processo,        
         'clientes': clientes,
+        'opcoes_unicas': opcoes_unicas,
         'total_contatos': total_contatos,
         'corretores': corretores_group.user_set.all() if corretores_group else [],
         'username': request.user.username,
