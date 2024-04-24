@@ -94,6 +94,18 @@
                                             <option value="nao_concluido">Não Concluído</option>
                                         </select>
                                     </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label for="filtroOpcoes" class="form-label">Opções Selecionadas:</label>
+                                        <select id="filtroOpcoes" name="filtroOpcoes" class="form-select">
+                                            <option value="">Todas as opções</option>
+                                            {% for processo in processos %}
+                                                {% for opcao in processo.opcoes_selecionadas.all %}
+                                                    <option value="{{ opcao.opcao }}">{{ opcao.opcao }}</option>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
                             
                                     <div class="col-md-2 mb-3">
                                         <label for="dataInicio" class="form-label">Data de Início:</label>
@@ -139,8 +151,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for processo in processos %}
-                                <tr {% if processo.data_finalizacao %}class="bg-success"{% endif %}>
+                                {% for processo in processos reversed %}
+                                <tr {% if processo.data_finalizacao %}class="bg-success"{% else %}{% if processo.opcoes_selecionadas.last.opcao == 'Pendente' %}class="bg-danger"{% endif %}{% endif %}>
+
                                     <td class="align-middle text-white">{{ processo.cliente.nome }}</td>
                                     <td class="align-middle text-white">{{ processo.tipo }}</td>
                                     <td class="align-middle text-white">
@@ -180,12 +193,7 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a href="{% url 'editar_processo' processo.id %}" target="_blank" class="dropdown-item">Editar processo</a>
-                                                <form action="{% url 'deletar_processo' processo.id %}" method="post" style="display: inline;">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="dropdown-item">
-                                                        Excluir processo
-                                                    </button>
-                                                </form>
+                                                
                                                 <button type="button" class="dropdown-item" data-toggle="modal" data-target="#addNoteModal" data-cliente-id="{{ processo.cliente.id }}" data-processo-id="{{ processo.id }}">
                                                     Adicionar Nota
                                                 </button>
@@ -193,6 +201,10 @@
                                                     {% csrf_token %}
                                                     <input type="hidden" name="processo_id" value="{{ processo.id }}">
                                                     <button type="submit" class="dropdown-item">Finalizar processo</button>
+                                                </form>
+                                                <form id="delete-form" action="{% url 'deletar_processo' processo.id %}" method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="button" class="dropdown-item text-danger" onclick="confirmarExclusao()">Excluir processo</button>
                                                 </form>
                                                 <a href="{% if processo.cliente %}{% url 'detalhes_do_processo' cliente_id=processo.cliente.id processo_id=processo.id %}{% endif %}" class="dropdown-item">Ver detalhes</a>
                                             </div>
@@ -205,7 +217,13 @@
                         </table>
                     </div>
                     
-                    
+                    <script>
+                        function confirmarExclusao() {
+                            if (confirm("Tem certeza de que deseja excluir este processo?")) {
+                                document.getElementById('delete-form').submit();
+                            }
+                        }
+                    </script>
                     
                     
                 </div>

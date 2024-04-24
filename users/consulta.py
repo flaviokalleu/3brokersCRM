@@ -17,8 +17,8 @@ def remove_phrases_from_pdf(pdf_file, output_file):
     doc = fitz.open(pdf_file)
 
     phrases_to_remove = [
-        "Código do Correspondente: 000703230",
-        "Código do Convênio 00070323-0 Identificação do Operador Flavio"
+        "Código do Correspondente: 000751618",
+        "Código do Convênio 00075161-8 Identificação do Operador Anne"
     ]
 
     for page_num in range(doc.page_count):

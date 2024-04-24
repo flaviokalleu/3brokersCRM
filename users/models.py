@@ -164,10 +164,10 @@ class TipoProcesso(models.Model):
 
     def obter_opcoes(self):
         if self.nome == 'novo':
-            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizar']
+            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
 
         elif self.nome == 'usado':
-            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizar']
+            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
 
 
         elif self.nome == 'Agio':

@@ -87,6 +87,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 import requests
 from django.db.models import F
+from django.db.models import Subquery, OuterRef
 # Importando o modelo UserAccessLog que você deve ter definido anteriormente
 from .models import UserAccessLog
 from django.shortcuts import render
@@ -2266,7 +2267,59 @@ def calcular_progresso(processo, processo_id, cliente):
 
     progresso = len(opcoes_selecionadas) / len(opcoes_disponiveis) * 100
     return int(progresso)
+def apply_filters(request, processos):
+    tipo_filtro = request.GET.get('filtroTipo', '')
+    responsavel_filtro = request.GET.get('filtroResponsaveis', '')
+    progresso_filtro = request.GET.get('filtroProgresso', '')
+    proprietario_filtro = request.GET.get('filtroProprietarios', '')
+    filtro_opcoes = request.GET.get('filtroOpcoes', '')
+    data_inicio = request.GET.get('dataInicio')
+    data_fim = request.GET.get('dataFim')
 
+    if tipo_filtro:
+        processos = processos.filter(tipo__iexact=tipo_filtro)
+
+    if responsavel_filtro:
+        responsavel = CustomUser.objects.filter(id=responsavel_filtro).first()
+        if responsavel:
+            processos = processos.filter(responsaveis=responsavel)
+
+    if progresso_filtro:
+        if progresso_filtro == 'concluido':
+            processos = processos.exclude(data_finalizacao__isnull=True)
+        elif progresso_filtro == 'nao_concluido':
+            processos = processos.filter(data_finalizacao__isnull=True)
+
+    if proprietario_filtro:
+        proprietario = Proprietario.objects.filter(id=proprietario_filtro).first()
+        if proprietario:
+            processos = processos.filter(proprietario=proprietario)
+        else:
+            processos = Processo.objects.none()  # Retorna uma queryset vazia se o proprietário não for encontrado
+
+    filtro_opcoes = request.GET.get('filtroOpcoes', '')
+    if filtro_opcoes:
+        # Subconsulta para obter a última opção selecionada para cada processo
+        ultima_opcao_subquery = OpcaoSelecionada.objects.filter(processo=OuterRef('pk')).order_by('-id')[:1]
+        
+        # Filtrar os processos pela última opção selecionada
+        processos = processos.annotate(ultima_opcao=Subquery(ultima_opcao_subquery.values('opcao')))
+        processos = processos.filter(ultima_opcao__icontains=filtro_opcoes)
+
+    if data_inicio and data_fim:
+        data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d').date()
+        data_fim = datetime.strptime(data_fim, '%Y-%m-%d').date()
+        processos = processos.filter(Q(data_inicio__gte=data_inicio) & Q(data_inicio__lte=data_fim))
+
+    return processos
+
+def update_process_status(processos):
+    for processo in processos:
+        processo.progresso = int(calcular_progresso(processo, processo.id, processo.cliente))
+        processo.num_notas = Nota_notification.objects.filter(processo=processo).count()
+        processo.num_notas_nao_concluidas = Nota_notification.objects.filter(processo=processo, nova=True).count()
+        if processo.cliente:
+            processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
 def lista_processos(request):
     corretores_group = Group.objects.filter(name='Corretores').first()
     is_corretor = corretores_group and request.user.groups.filter(pk=corretores_group.pk).exists()
@@ -2275,22 +2328,26 @@ def lista_processos(request):
         processos = Processo.objects.filter(responsaveis=request.user)
     else:
         processos = Processo.objects.all()
-        
-        
+
+    # Adicionando progresso e contagem de notas aos processos
     for processo in processos:
         processo.progresso = int(calcular_progresso(processo, processo.id, processo.cliente))
         processo.num_notas = Nota_notification.objects.filter(processo=processo).count()
         processo.num_notas_nao_concluidas = Nota_notification.objects.filter(processo=processo, nova=True).count()
         if processo.cliente:
             processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
-        
-    
-        
 
     total_processos = processos.count()
     tipos_processo = TipoProcesso.objects.all()
 
+    # Ordenando os processos pelo ID de forma decrescente
+    
+    filtro_opcoes = request.GET.get('filtroOpcoes', '')
+    if filtro_opcoes:
+        processos = processos.filter(opcaoselecionada__opcao__icontains=filtro_opcoes)
+
     opcoes_por_tipo_processo = {}
+
     tipo_filtro = request.GET.get('filtroTipo', '')
     responsavel_filtro = request.GET.get('filtroResponsaveis', '')
     progresso_filtro = request.GET.get('filtroProgresso', '')
@@ -2318,6 +2375,7 @@ def lista_processos(request):
             processos = Processo.objects.none()  # Retorna uma queryset vazia se o proprietário não for encontrado
 
     add_note_form = AddNoteForm()
+    
     tipo_filtro = request.GET.get('tipo_processo', '')
     responsavel_filtro = request.GET.get('filtroResponsaveis', '')
     progresso_filtro = request.GET.get('progresso', '')
@@ -2352,7 +2410,10 @@ def lista_processos(request):
     imoveis_disponiveis = Imovel.objects.all()
     data_inicio = request.GET.get('dataInicio')
     data_fim = request.GET.get('dataFim')
+    processos = apply_filters(request, processos)
 
+        # Atualizar o status dos processos com base nos filtros aplicados
+    update_process_status(processos)
     if data_inicio and data_fim:
         data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d').date()
         data_fim = datetime.strptime(data_fim, '%Y-%m-%d').date()
@@ -2363,6 +2424,7 @@ def lista_processos(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Processo editado com sucesso.')
+
     # Se o processo_id e o cliente_id não estiverem vazios, redirecione para a página 'nova_nota'
     processo_id = request.GET.get('processo_id', None)
     cliente_id = request.GET.get('cliente_id', None)
@@ -2377,6 +2439,7 @@ def lista_processos(request):
             form.save()
             messages.success(request, 'Processo editado com sucesso.')
             return redirect('lista_processos')  # Redireciona para a mesma página
+    
     tipo_processo_opcoes = {
         'novo': ['Aprovação', 'Ficha de cadastro 3B', 'Pagamento TSD', 'Fichas Caixa', 'Documentação Dep', 'Declaração Dep',
                  'Documentação imóvel', 'Damp', 'Conformidade', 'Inconforme', 'Conforme', 'Assinatura Minuta Caixa', 'Itbi',
@@ -2393,20 +2456,20 @@ def lista_processos(request):
     }
 
     opcoes_por_tipo_processo_json = json.dumps(opcoes_por_tipo_processo)
-    
+
     return render(request, 'processos.html', {
-    'processos': processos,
-    'total_processos': total_processos,
-    'tipos_processo': tipos_processo,
-    'tipo_processo_opcoes': tipo_processo_opcoes,
-    'clientes': clientes,
-    'total_contatos': total_contatos,
-    'corretores': corretores_group.user_set.all() if corretores_group else [],
-    'username': request.user.username,
-    'proprietarios': proprietarios,
-    'opcoes_por_tipo_processo_json': opcoes_por_tipo_processo_json,
-    'imoveis_disponiveis': imoveis_disponiveis,
-})
+        'processos': processos,
+        'total_processos': total_processos,
+        'tipos_processo': tipos_processo,
+        'tipo_processo_opcoes': tipo_processo_opcoes,
+        'clientes': clientes,
+        'total_contatos': total_contatos,
+        'corretores': corretores_group.user_set.all() if corretores_group else [],
+        'username': request.user.username,
+        'proprietarios': proprietarios,
+        'opcoes_por_tipo_processo_json': opcoes_por_tipo_processo_json,
+        'imoveis_disponiveis': imoveis_disponiveis,
+    })
     
 
 def alterar_opcao(request, processo_id, opcao_id):
@@ -2548,6 +2611,9 @@ def detalhes_do_processo(request, cliente_id, processo_id):
 
             for corretor in processo.responsaveis.all():
                 send_whatsapp_notification2(corretor, notification_text)
+
+            # Após atualizar o processo com sucesso, redirecione para a lista de processos
+            return redirect('lista_processos')
     else:
         form = OpcoesForm(tipos_processo=[tipo_processo], opcoes_selecionadas=opcoes_selecionadas)
 
@@ -2564,7 +2630,6 @@ def detalhes_do_processo(request, cliente_id, processo_id):
         'processo_id': processo.id,
         'username': request.user.username
     })
-
 
 @login_required
 def nova_nota_view(request, cliente_id, processo_id):

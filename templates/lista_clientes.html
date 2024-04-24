@@ -171,9 +171,18 @@
                             </div>
                         </form>
                     </div>
-                    
+                    <!-- Estatísticas -->
+
+    
+ 
+
+    
+
                     <div class="table-responsive-sm" id="conteudoLista">
+                        
                         <table class="table align-items-center mb-0" id="clienteTable">
+                            <h2 class="card-title align-items-center text-right">Total de Clientes</h2>
+                            <p class="card-text text-white align-items-center text-right">{{ total_clientes }}</p>
                             <thead>
                                 <tr>
                                     <th class="text-uppercase mb-0 text-s text-xxs font-weight-bolder opacity-7">Nome</th>
@@ -195,7 +204,7 @@
                                         <td>
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-xs">{{ cliente.nome }}</h6>
+                                                    <h6 class="mb-0 text-xs text-white">{{ cliente.nome }}</h6>
                                                 </div>
                                             </div>
                                         </td>
@@ -205,19 +214,22 @@
                                             </button>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <span class="mb-0 text-s text-xs font-weight-bold">{{ cliente.data_de_criacao }}</span>
+                                            <span class="mb-0 text-s text-xs font-weight-bold text-white ">{{ cliente.data_de_criacao }}</span>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <span class="mb-0 text-s text-xs font-weight-bold">{{ cliente.corretor.first_name }} {{ cliente.corretor.last_name }}</span>
+                                            <span class="mb-0 text-s text-xs font-weight-bold text-white">{{ cliente.corretor.first_name }} {{ cliente.corretor.last_name }}</span>
                                         </td>
                                         <td class="align-middle text-center">
                                             <button onclick="abrirModal({{ cliente.id }})" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#clienteModal">Ver detalhes</button>
                                         </td>
                                         <td class="align-middle text-center">
                                             <a href="#" data-bs-toggle="modal" data-bs-target="#notaModal-{{ cliente.id }}">
-                                                <span class="badge {% if cliente.tem_nota_nova %}bg-danger{% else %}bg-secondary{% endif %}">{{ cliente.notas_count }}</span>
+                                                <span class="badge {% if cliente.notas_count > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ cliente.notas_count }}
+                                                </span>
                                             </a>
                                         </td>
+                                        
                                         
                                         <td class="align-middle text-center">
                                             <div class="btn-group">
