@@ -1,8 +1,8 @@
-﻿import re
+﻿import base64
 import os
-import base64
+import re
 import time
-import fitz  # PyMuPDF
+from PyPDF2 import PdfReader, PdfWriter
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -11,29 +11,38 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from config import CONVENIO, USERNAME, PASSWORD
 from selenium.webdriver.common.keys import Keys
+from bs4 import BeautifulSoup
+
+
+def remove_html_from_pdf(html, output_file):
+    soup = BeautifulSoup(html, "html.parser")
+    for tbody in soup.find_all("tbody"):
+        if "Código do Convênio" in tbody.get_text() and "Identificação do Operador" in tbody.get_text():
+            tbody.decompose()
+    return str(soup)
 
 
 def remove_phrases_from_pdf(pdf_file, output_file):
-    doc = fitz.open(pdf_file)
-
     phrases_to_remove = [
-        "Código do Correspondente: 000751618",
-        "Código do Convênio 00075161-8 Identificação do Operador Anne"
+        "Código do Convênio 00075161-8",
+        "Identificação do Operador FLAVIO"
     ]
 
-    for page_num in range(doc.page_count):
-        page = doc[page_num]
+    pdf_reader = PdfReader(pdf_file)
+    pdf_writer = PdfWriter()
+
+    for page_num in range(len(pdf_reader.pages)):
+        page = pdf_reader.pages[page_num]
+        text = page.extract_text()
 
         for phrase in phrases_to_remove:
-            rects = page.search_for(phrase)
-            for rect in rects:
-                annot = page.add_redact_annot(rect)
+            text = re.sub(re.escape(phrase), '', text)
 
-        page.apply_redactions()
-        page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
+        pdf_writer.add_page(page)
 
-    doc.save(output_file)
-    doc.close()
+    with open(output_file, 'wb') as out:
+        pdf_writer.write(out)
+
 
 def login(browser):
     time.sleep(2)
@@ -68,7 +77,7 @@ def consulta_cpf_func(cpf):
     cpf = re.sub(r'[^0-9]', '', cpf)
 
     chrome_options = Options()
-    chrome_options.add_argument('--headless')
+    #chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_experimental_option('prefs', {
@@ -94,13 +103,15 @@ def consulta_cpf_func(cpf):
             handle_alert_and_login(browser)
         
         
-        browser.get('https://caixaaqui.caixa.gov.br/caixaaqui/CaixaAquiController/consulta_cadastral/consulta_cadastral1')
+        browser.get('https://caixaaqui.caixa.gov.br/caixaaqui/CaixaAquiController/resumo_cliente/resumo_cliente_init')
 
-        cpf_input = WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/form/center/div[2]/div[2]/table/tbody/tr[3]/td/div[1]/input')))
+        cpf_input = WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/center/div[2]/div[2]/form/center/table/tbody/tr[2]/td/input')))
         cpf_input.send_keys(cpf)
+        time.sleep(2)
 
-        submit_button_cpf = browser.find_element(By.CSS_SELECTOR, '#spanCPF .btn-azul')
+        submit_button_cpf = WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/center/div[2]/div[2]/form/center/table/tbody/tr[2]/td/a')))
         submit_button_cpf.click()
+        time.sleep(3)
 
         directory = 'static/uploads/PDF'
 
@@ -119,8 +130,15 @@ def consulta_cpf_func(cpf):
         with open(filename, 'wb') as f:
             f.write(base64.b64decode(pdf_content['data']))
 
-        output_filename = os.path.join(directory, f"{cpf}_modified.pdf")
-        remove_phrases_from_pdf(filename, output_filename)
+        output_filename = os.path.join(directory, f"{cpf}.pdf")
+
+        html_content = browser.execute_script("return document.documentElement.outerHTML")
+        modified_html = remove_html_from_pdf(html_content, output_filename)
+        
+        with open(output_filename, 'wb') as f:
+            f.write(base64.b64decode(pdf_content['data']))
+
+        remove_phrases_from_pdf(output_filename, output_filename)
 
         file_url = f"static/uploads/PDF/{cpf}_modified.pdf"
         return {"message": "Consulta concluída com sucesso.", "file_url": file_url}

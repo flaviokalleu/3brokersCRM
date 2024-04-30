@@ -270,6 +270,7 @@
     </div>
 {% endfor %}
 <!-- Modal de adição de processo -->
+<!-- Modal de Adicionar Processo -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -286,10 +287,18 @@
                     <!-- Campo oculto para armazenar o ID do cliente -->
                     <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
                     <div class="form-group">
+                        <label for="cliente">Cliente</label>
+                        <select class="form-control" id="cliente" name="cliente">
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="proprietario">Proprietário</label>
                         <select class="form-control" id="proprietario" name="proprietario">
                             {% for proprietario in proprietarios %}
-                            <option value="{{ proprietario.id }}">{{ proprietario.nome }}</option>
+                                <option value="{{ proprietario.id }}">{{ proprietario.nome }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -297,7 +306,7 @@
                         <label for="tipo">Tipo</label>
                         <select class="form-control" id="tipo" name="tipo">
                             {% for tipo in tipos_processo %}
-                            <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                                <option value="{{ tipo.nome}}">{{ tipo.nome }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -305,7 +314,7 @@
                         <label for="imoveis">Imóveis</label>
                         <select class="form-control" id="imoveis" name="imoveis">
                             {% for imovel in imoveis_disponiveis %}
-                            <option value="{{ imovel.id }}">{{ imovel.nome_do_imovel }}</option>
+                                <option value="{{ imovel.id }}">{{ imovel.nome_do_imovel }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -313,19 +322,19 @@
                         <label for="responsaveis">Responsáveis</label>
                         <select class="form-control" id="responsaveis" name="responsaveis">
                             {% for corretor in corretores %}
-                            <option value="{{ corretor.id }}">{{ corretor.first_name }} {{ corretor.last_name }}</option>
+                                <option value="{{ corretor.id }}">{{ corretor.first_name }} {{ corretor.last_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <!-- Adicione outros campos conforme necessário -->
                     <button type="button" class="btn btn-secondary modal-close">Fechar</button>
-
                     <button type="submit" class="btn btn-primary">Salvar</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 
 
 <!-- Notas -->

@@ -34,8 +34,28 @@
     }
     
      
+    .property-card {
+      margin-left: 10px;
+      margin-right: 10px;
+  }
 
+  .card {
+        width: 300px;
+        height: 400px;
+        margin-top: 20px;
+        margin-bottom: 20px; /* Adiciona espaçamento entre os cards */
+        margin-right: 10px; /* Adiciona espaçamento entre os cards */
+    }
 
+    .card-content {
+        padding: 1.5rem; /* Adiciona espaçamento interno para o conteúdo dentro do card */
+    }
+
+    .card-image {
+        width: 100%;
+        height: 70%;
+        object-fit: cover;
+    }
 
   </style>
 <body class="bg-white dark:bg-gray-800">
@@ -45,7 +65,8 @@
 
 
 
-<nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
+<header>
+  <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="https://3brokers.com.br/" class="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="{% static 'img/logos/logo.png' %}" class="h-8" alt="New Logo">
@@ -90,249 +111,228 @@
         </div>
     </div>
 </nav>
-
-  
-  
+</header>
 
 <!-- Seção 1: Banner -->
 
-
-
-
-<section class="relative bg-gray-700 bg-blend-multiply ">
-    <video autoplay loop muted class="absolute inset-0 w-full h-full object-cover">
-        <source src="{% static 'video/intro.mp4' %}" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <div class="overlay"></div>
-    <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-56 relative">
-        <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">Invista Hoje mesmo no seu imóvel!</h1>
-        <p class="mb-8 text-lg font-normal text-white lg:text-xl sm:px-16 lg:px-48">Não deixe para depois o que você pode fazer hoje! Saia do aluguel!</p>
-        <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
-            <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20fazer%20uma%20simula%C3%A7%C3%A3o" class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
-                Fazer Simulação
-                <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                </svg>
-            </a>
-            <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20mais%20informa%C3%A7%C3%B5es" class="inline-flex justify-center hover:text-gray-900 items-center py-3 px-5 sm:ms-4 text-base font-medium text-center text-white rounded-lg border border-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-400">
-                Entrar em contato
-            </a>  
-
-            
-        </div>
-        <!-- Seta indicando mais conteúdo abaixo -->
-        
-    </div>
-
-    
+<section class="relative bg-gray-700 bg-blend-multiply h-screen">
+  <video autoplay loop muted class="absolute inset-0 w-full h-full object-cover">
+      <source src="{% static 'video/intro.mp4' %}" type="video/mp4">
+      Your browser does not support the video tag.
+  </video>
+  <div class="overlay"></div>
+  <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-56 relative">
+      <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">Invista Hoje mesmo no seu imóvel!</h1>
+      <p class="mb-8 text-lg font-normal text-white lg:text-xl sm:px-16 lg:px-48">Não deixe para depois o que você pode fazer hoje! Saia do aluguel!</p>
+      <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
+          <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20fazer%20uma%20simula%C3%A7%C3%A3o" class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+              Fazer Simulação
+              <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+              </svg>
+          </a>
+          <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20mais%20informa%C3%A7%C3%B5es" class="inline-flex justify-center hover:text-gray-900 items-center py-3 px-5 sm:ms-4 text-base font-medium text-center text-white rounded-lg border border-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-400">
+              Entrar em contato
+          </a>
+      </div>
+      <!-- Animação de rolagem para baixo -->
+      <div class="mt-12 animate-bounce">
+          <svg class="w-8 h-8 text-white mx-auto cursor-pointer" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path fill="#fff" d="M12 14l8-8-1.4-1.4L12 11.2l-6.6-6.6L3 6z"/>
+          </svg>
+      </div>
+  </div>
 </section>
-<div class="mt-12">
-    <svg class="animate-bounce w-6 h-6 text-white mx-auto" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path fill="#fff" d="M12 14l8-8-1.4-1.4L12 11.2l-6.6-6.6L3 6z"/>
-    </svg>
-</div>
+
+<script>
+  document.querySelector('.animate-bounce').addEventListener('click', function() {
+      window.scrollBy({
+          top: window.innerHeight,
+          behavior: 'smooth'
+      });
+  });
+</script>
 
 
 
 
-<style>
-    
 
-    .card {
-        width: 300px;
-        height: 400px;
-        margin-top: 20px;
-        margin-bottom: 20px; /* Adiciona espaçamento entre os cards */
-        margin-right: 10px; /* Adiciona espaçamento entre os cards */
-    }
-
-    .card-content {
-        padding: 1.5rem; /* Adiciona espaçamento interno para o conteúdo dentro do card */
-    }
-
-    .card-image {
-        width: 100%;
-        height: 70%;
-        object-fit: cover;
-    }
-</style>
 
 
 
 
 <section id="new-properties" class="properties-section new-properties mt-8">
-    <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMÓVEL NOVO</h2>
-    <!-- Botão de navegação para a esquerda -->
-    
-    <!-- Fim do botão de navegação para a esquerda -->
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 top-20">
-        {% for imovel in imoveis %}
-            {% if imovel.tipo == 'NOVO' %}
-                <div class="max-w-md bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 top-8 card">
-                    <a href="#">
-                        <img class="rounded-t-lg card-image" src="{{ imovel.imagem_de_capa.url }}" alt="Imagem de Capa do Imóvel" />
-                    </a>
-                    <div class="p-5 card-content flex flex-col justify-between"> <!-- Adiciona a classe card-content para aplicar o padding -->
-                        <div>
-                            <a href="#">
-                                <h5 class="mb-2 text-1xl font-bold tracking-tight text-gray-900 dark:text-white truncate">{{ imovel.nome_do_imovel }}</h5>
-                            </a>
-                        </div>
-                        <div class="flex justify-end"> <!-- Adiciona classe para alinhar o botão à direita -->
-                            <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Ver o imóvel
-                                <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
-    </div>
-   
-    <!-- Fim do botão de navegação para a direita -->
-</section>
-<section id="Accordion" class="container mx-auto">
-<h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">Perguntas Frequentes</h2>
-<div id="accordion-arrow-icon" data-accordion="open">
-    <h2 id="accordion-arrow-icon-heading-1">
-      <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-900 bg-gray-100 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-1" aria-expanded="true" aria-controls="accordion-arrow-icon-body-1">
-        <span>Qual Valor das Parcelas?</span>
-      </button>
-    </h2>
-    <div id="accordion-arrow-icon-body-1" aria-labelledby="accordion-arrow-icon-heading-1">
-      <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
-        <p class="mb-2 text-gray-500 dark:text-white">O valor da sua parcela depende de quanto  o banco concorda em emprestar para você. Só vamos saber quanto você vai pagar por mês depois que o banco analisar suas informações financeiras. Isso significa que precisamos esperar o banco ver o quanto você pode pagar e depois eles vão nos dizer quanto será sua parcela todo mês.</p>
-        <p class="text-gray-500 dark:text-white">Caso Queira fazer sua analise de Credito <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20fazer%20uma%20simula%C3%A7%C3%A3o" class="text-blue-600 dark:text-blue-500 hover:underline">Clique Aqui</a> </p>
+  <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMÓVEIS NOVOS</h2>
+      <div class="grid grid-cols-3 gap-8">
+          {% for imovel in imoveis %}
+              {% if imovel.tipo == 'NOVO' %}
+                  <div class="bg-white shadow-lg rounded-lg overflow-hidden property-card">
+                      <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-full h-96 object-cover object-center">
+                      <div class="p-4">
+                          <a href="#" class="block text-center text-primary-700 font-semibold hover:text-primary-900">Ver Imóvel</a>
+                      </div>
+                  </div>
+              {% endif %}
+          {% endfor %}
       </div>
-    </div>
-    <h2 id="accordion-arrow-icon-heading-2">
-      <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-2" aria-expanded="false" aria-controls="accordion-arrow-icon-body-2">
-        <span>Qual Valor da Entrada?</span>
-        <svg class="w-4 h-4 shrink-0 -me-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.529 7.988a2.502 2.502 0 0 1 5 .191A2.441 2.441 0 0 1 10 10.582V12m-.01 3.008H10M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-        </svg>
-      </button>
-    </h2>
-    <div id="accordion-arrow-icon-body-2" class="hidden" aria-labelledby="accordion-arrow-icon-heading-2">
-      <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700">
-        <p class="mb-2 text-gray-500 dark:text-white">O valor que você precisa pagar no começo, chamado de entrada, pode ser diferente para cada pessoa. Só poderemos dizer quanto será a sua entrada depois que o banco analisar suas informações financeiras. Então, vamos simular o financiamento para cada imóvel e ver se você precisará pagar uma entrada ou não.</p>
-        
-      </div>
-    </div>
-    <h2 id="accordion-arrow-icon-heading-3">
-      <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-3" aria-expanded="false" aria-controls="accordion-arrow-icon-body-3">
-        <span>Tenho nome Sujo posso financiar?</span>
-        <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
-        </svg>
-      </button>
-    </h2>
-    <div id="accordion-arrow-icon-body-3" class="hidden" aria-labelledby="accordion-arrow-icon-heading-3">
-      <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
-        <p class="mb-2 text-gray-500 dark:text-white">Infelizmente,não, atualmente, o requisito mais importante para financiar um imóvel é ter o nome limpo. Isso significa que suas contas precisam estar em dia e sem dívidas pendentes.</p>        
-      </div>
-    </div>
-    <h2 id="accordion-arrow-icon-heading-4">
-        <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-4" aria-expanded="false" aria-controls="accordion-arrow-icon-body-4">
-          <span>Sou Autonomo consigo um financiamento?</span>
-          <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
-          </svg>
-        </button>
-      </h2>
-      <div id="accordion-arrow-icon-body-4" class="hidden" aria-labelledby="accordion-arrow-icon-heading-4">
-        <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
-          <p class="mb-2 text-gray-500 dark:text-white">Sim, é possível! Porém, para autônomos, pode ser um pouco mais difícil, mas não impossível! Muitos autônomos já conseguiram comprar conosco.</p>        
-        </div>
-      </div>
-
-      <h2 id="accordion-arrow-icon-heading-5">
-        <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-5" aria-expanded="false" aria-controls="accordion-arrow-icon-body-5">
-          <span>Fiz uma Simulação sem fazer Analise de Credito antes!</span>
-          <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
-          </svg>
-        </button>
-      </h2>
-      <div id="accordion-arrow-icon-body-5" class="hidden" aria-labelledby="accordion-arrow-icon-heading-5">
-        <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
-          <p class="mb-2 text-gray-500 dark:text-white">Ao fazer uma simulação sem a análise de crédito, estamos apenas considerando a melhor hipótese, pois não temos valores precisos. Mas quando fazemos a análise de crédito e temos os valores corretos, podemos realmente determinar o que será melhor para você.</p>        
-        </div>
-      </div>
-
   </div>
-</section>    
-
-<section id="used-properties" class="properties-section used-properties mt-8">
-    <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMOVEL USADO</h2>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 flex space-x-4">
-        {% for imovel in imoveis %}
-            {% if imovel.tipo == 'USADO' %}
-            <div class="max-w-md bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 top-8 flex space-x-4 card">
-
-                    <a href="#">
-                        <img class="rounded-t-lg card-image" src="{{ imovel.imagem_de_capa.url }}" alt="Imagem de Capa do Imóvel" />
-                    </a>
-                    <div class="p-5 card-content flex flex-col justify-between"> <!-- Adiciona a classe card-content para aplicar o padding -->
-                        <div>
-                            <a href="#">
-                                <h5 class="mb-2 text-1xl font-bold tracking-tight text-gray-900 dark:text-white truncate">{{ imovel.nome_do_imovel }}</h5>
-                            </a>
-                        </div>
-                        <div class="flex justify-end"> <!-- Adiciona classe para alinhar o botão à direita -->
-                            <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Ver o imovel
-                                <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
-    </div>
 </section>
 
 
 
-<!-- AGIO -->
+
+
+
+
+<!-- IMÓVEIS USADOS -->
 <section id="used-properties" class="properties-section used-properties mt-8">
-    <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">AGIOS</h2>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 top-20">
-        {% for imovel in imoveis %}
-            {% if imovel.tipo == 'AGIO' %}
-                <div class="max-w-md bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 top-8 card">
-                    <a href="#">
-                        <img class="rounded-t-lg card-image" src="{{ imovel.imagem_de_capa.url }}" alt="Imagem de Capa do Imóvel" />
-                    </a>
-                    <div class="p-5 card-content flex flex-col justify-between"> <!-- Adiciona a classe card-content para aplicar o padding -->
-                        <div>
-                            <a href="#">
-                                <h5 class="mb-2 text-1xl font-bold tracking-tight text-gray-900 dark:text-white truncate">{{ imovel.nome_do_imovel }}</h5>
-                            </a>
-                        </div>
-                        <div class="flex justify-end"> <!-- Adiciona classe para alinhar o botão à direita -->
-                            <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Ver o imovel
-                                <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
+  <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMÓVEIS USADOS</h2>
+      <div class="grid grid-cols-3 gap-8">
+          {% for imovel in imoveis %}
+              {% if imovel.tipo == 'USADO' %}
+                  <div class="bg-white shadow-lg rounded-lg overflow-hidden property-card">
+                      <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-full h-96 object-cover object-center">
+                      <div class="p-4">
+                          <a href="#" class="block text-center text-primary-700 font-semibold hover:text-primary-900">Ver Imóvel</a>
+                      </div>
+                  </div>
+              {% endif %}
+          {% endfor %}
+      </div>
+  </div>
+</section>
+
+<!-- ÁGIOS -->
+<section id="agio-properties" class="properties-section agio-properties mt-8">
+  <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">ÁGIOS</h2>
+      <div class="grid grid-cols-3 gap-8">
+          {% for imovel in imoveis %}
+              {% if imovel.tipo == 'AGIO' %}
+                  <div class="bg-white shadow-lg rounded-lg overflow-hidden property-card">
+                      <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-full h-96 object-cover object-center">
+                      <div class="p-4">
+                          <a href="#" class="block text-center text-primary-700 font-semibold hover:text-primary-900">Ver Imóvel</a>
+                      </div>
+                  </div>
+              {% endif %}
+          {% endfor %}
+      </div>
+  </div>
+</section>
+
+<section class="py-16 bg-gray-100">
+  <div class="container mx-auto px-4">
+    <div class="flex flex-col lg:flex-row items-center justify-center space-y-8 lg:space-y-0 lg:space-x-16">
+      <!-- Ilustração -->
+      <div class="w-full lg:w-1/2">
+        <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/social-proof/table-professor.svg" alt="Illustration" class="w-full h-auto rounded-lg shadow-lg">
+      </div>
+      <!-- Estatísticas -->
+      <div class="w-full lg:w-1/2">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Social Proof through Statistics</h2>
+        <div class="flex flex-col space-y-6">
+          <!-- Estatística 1 -->
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+              <span class="text-white text-lg font-bold">1</span>
+            </div>
+            <p class="text-gray-700">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          </div>
+          <!-- Estatística 2 -->
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
+              <span class="text-white text-lg font-bold">2</span>
+            </div>
+            <p class="text-gray-700">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          </div>
+          <!-- Estatística 3 -->
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mr-4">
+              <span class="text-white text-lg font-bold">3</span>
+            </div>
+            <p class="text-gray-700">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </section>
 
 
-
+<section id="Accordion" class="container mx-auto">
+  <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">Perguntas Frequentes</h2>
+  <div id="accordion-arrow-icon" data-accordion="open">
+      <h2 id="accordion-arrow-icon-heading-1">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-900 bg-gray-100 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-1" aria-expanded="true" aria-controls="accordion-arrow-icon-body-1">
+          <span>Qual Valor das Parcelas?</span>
+        </button>
+      </h2>
+      <div id="accordion-arrow-icon-body-1" aria-labelledby="accordion-arrow-icon-heading-1">
+        <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+          <p class="mb-2 text-gray-500 dark:text-white">O valor da sua parcela depende de quanto  o banco concorda em emprestar para você. Só vamos saber quanto você vai pagar por mês depois que o banco analisar suas informações financeiras. Isso significa que precisamos esperar o banco ver o quanto você pode pagar e depois eles vão nos dizer quanto será sua parcela todo mês.</p>
+          <p class="text-gray-500 dark:text-white">Caso Queira fazer sua analise de Credito <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20fazer%20uma%20simula%C3%A7%C3%A3o" class="text-blue-600 dark:text-blue-500 hover:underline">Clique Aqui</a> </p>
+        </div>
+      </div>
+      <h2 id="accordion-arrow-icon-heading-2">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-2" aria-expanded="false" aria-controls="accordion-arrow-icon-body-2">
+          <span>Qual Valor da Entrada?</span>
+          <svg class="w-4 h-4 shrink-0 -me-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.529 7.988a2.502 2.502 0 0 1 5 .191A2.441 2.441 0 0 1 10 10.582V12m-.01 3.008H10M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-arrow-icon-body-2" class="hidden" aria-labelledby="accordion-arrow-icon-heading-2">
+        <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700">
+          <p class="mb-2 text-gray-500 dark:text-white">O valor que você precisa pagar no começo, chamado de entrada, pode ser diferente para cada pessoa. Só poderemos dizer quanto será a sua entrada depois que o banco analisar suas informações financeiras. Então, vamos simular o financiamento para cada imóvel e ver se você precisará pagar uma entrada ou não.</p>
+          
+        </div>
+      </div>
+      <h2 id="accordion-arrow-icon-heading-3">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-3" aria-expanded="false" aria-controls="accordion-arrow-icon-body-3">
+          <span>Tenho nome Sujo posso financiar?</span>
+          <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-arrow-icon-body-3" class="hidden" aria-labelledby="accordion-arrow-icon-heading-3">
+        <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+          <p class="mb-2 text-gray-500 dark:text-white">Infelizmente,não, atualmente, o requisito mais importante para financiar um imóvel é ter o nome limpo. Isso significa que suas contas precisam estar em dia e sem dívidas pendentes.</p>        
+        </div>
+      </div>
+      <h2 id="accordion-arrow-icon-heading-4">
+          <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-4" aria-expanded="false" aria-controls="accordion-arrow-icon-body-4">
+            <span>Sou Autonomo consigo um financiamento?</span>
+            <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+            </svg>
+          </button>
+        </h2>
+        <div id="accordion-arrow-icon-body-4" class="hidden" aria-labelledby="accordion-arrow-icon-heading-4">
+          <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+            <p class="mb-2 text-gray-500 dark:text-white">Sim, é possível! Porém, para autônomos, pode ser um pouco mais difícil, mas não impossível! Muitos autônomos já conseguiram comprar conosco.</p>        
+          </div>
+        </div>
+  
+        <h2 id="accordion-arrow-icon-heading-5">
+          <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-arrow-icon-body-5" aria-expanded="false" aria-controls="accordion-arrow-icon-body-5">
+            <span>Fiz uma Simulação sem fazer Analise de Credito antes!</span>
+            <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+            </svg>
+          </button>
+        </h2>
+        <div id="accordion-arrow-icon-body-5" class="hidden" aria-labelledby="accordion-arrow-icon-heading-5">
+          <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+            <p class="mb-2 text-gray-500 dark:text-white">Ao fazer uma simulação sem a análise de crédito, estamos apenas considerando a melhor hipótese, pois não temos valores precisos. Mas quando fazemos a análise de crédito e temos os valores corretos, podemos realmente determinar o que será melhor para você.</p>        
+          </div>
+        </div>
+  
+    </div>
+  </section>    
 <section class="bg-white dark:bg-gray-900 bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern.svg')] dark:bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern-dark.svg')]">
     <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 z-10 relative">
         <a href="#" class="inline-flex justify-between items-center py-1 px-1 pe-4 mb-7 text-sm text-blue-700 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800">
