@@ -164,16 +164,14 @@ class TipoProcesso(models.Model):
 
     def obter_opcoes(self):
         if self.nome == 'novo':
-            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
+            return ['Pendente','Conformidade','Conforme','Inconforme','Emissão de minuta', 'Contrato assinado','Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
 
         elif self.nome == 'usado':
-            return ['Pendente','Conformidade','Conforme','Inconforme', 'Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
+            return ['Pendente','Conformidade','Conforme','Inconforme', 'Emissão de minuta','Contrato assinado','Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
 
 
         elif self.nome == 'Agio':
-            return ['Escolha Unidade', 'Pagamento sinal', 'Verificação Parcelas', 'Verificação Cond', 'Verificação IPTU', 
-        'Agendamento Cartório', 'Cessão de Direitos', 'Procuração', 'Doc identificação Autenticado', 
-        'Pagamento Agio', 'Recebimento comissão', 'Receber valor', 'Cartório', 'Entrega de chaves']
+            return ['Pendente','Conformidade','Conforme','Inconforme', 'Emissão de minuta','Contrato assinado','Aguardando Comissão','Entrega de chaves','Aguardando Laudo','Catorio','Finalizado']
 
         else:
             return []

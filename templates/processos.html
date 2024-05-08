@@ -44,10 +44,20 @@
     <body class="g-sidenav-show bg-gray-100">         
         <!-- Tabela de Clientes -->
         <main class="main-content position-relative border-radius-lg">
+            {% if messages %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
             <div class="container-fluid py-4">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="h2">Clientes</h2>
+
                     <input type="text" placeholder="Pesquisar cliente..." id="searchInput" class="input-group p-2 rounded-md w-64 focus:ring-2 focus:ring-indigo-600 focus:outline-none text-black">
+
                 </div>
                 <div class="card p-4">
                     
@@ -98,11 +108,21 @@
                                         <label for="filtroOpcoes" class="form-label">Opções Selecionadas:</label>
                                         <select id="filtroOpcoes" name="filtroOpcoes" class="form-select">
                                             <option value="">Todas as opções</option>
-                                            {% for opcao in opcoes_unicas %}
-                                                <option value="{{ opcao }}">{{ opcao }}</option>
-                                            {% endfor %}
+                                            <option value="Pendente">Pendente</option>
+                                            <option value="Conformidade">Conformidade</option>
+                                            <option value="Conforme">Conforme</option>
+                                            <option value="Inconforme">Inconforme</option>
+                                            <option value="Emissão de minuta">Emissão de minuta</option>
+                                            <option value="Contrato assinado">Contrato assinado</option>
+                                            <option value="Aguardando Comissão">Aguardando Comissão</option>
+                                            <option value="Entrega de chaves">Entrega de chaves</option>
+                                            <option value="Aguardando Laudo">Aguardando Laudo</option>
+                                            <option value="Catorio">Catorio</option>
+                                            <option value="Finalizado">Finalizado</option>
                                         </select>
                                     </div>
+                                    
+                                    
                                     
                             
                                     <div class="col-md-2 mb-3">
@@ -240,7 +260,8 @@
                             {% for nota in processo.get_notas %}
                             <li id="nota{{ nota.id }}" class="list-group-item mb-3">
                                 {{ nota.texto }}
-                                {% if user.is_staff %}
+                                {% if user.is_staff or user.is_superuser or user.is_correspondente %}
+
                                 <div class="btn-group float-right">
                                     <form method="POST" action="{% url 'enviarmensagemcorrespondente' %}">
                                         {% csrf_token %}
@@ -249,6 +270,7 @@
                                         <button type="submit" class="btn btn-primary btn-sm">Enviar Mensagem</button>
                                     </form>
                                     <form method="POST" action="{% url 'deletar_nota' nota.id %}" style="display: inline;">
+
                                         {% csrf_token %}
                                         <input type="hidden" name="processo_id" value="{{ processo.id }}">
                                         <button type="submit" class="btn btn-danger btn-sm">Excluir Nota</button>
@@ -351,8 +373,8 @@
                 <!-- Formulário para adicionar uma nota -->
                 <form method="post" id="addNoteForm">
                     {% csrf_token %}
-                    Cliente ID: {{ processo.cliente.id }}
-                    Processo ID: {{ processo.id }}
+                    <!-- Adicionando um campo oculto para enviar o nome do cliente -->
+                    <input type="hidden" id="cliente_nome" name="cliente_nome" value="{{ processo.cliente.nome }}">
                     <!-- Dropdown para selecionar cliente -->
                     <div class="form-group">
                         <label for="cliente">Selecione o cliente:</label>
@@ -430,6 +452,60 @@
         // Aqui você pode adicionar o código para exibir o gráfico
     }
 </script>
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        var searchValue = this.value.trim().toLowerCase();
+    
+        // Pesquisa na Tabela
+        var tableRows = document.querySelectorAll('#conteudoLista tbody tr');
+        var found = false; // Variável para verificar se pelo menos um cliente foi encontrado
+
+        tableRows.forEach(function(row) {
+            var nomeCliente = row.querySelector('td:nth-child(1)').textContent.trim().toLowerCase();
+            if (nomeCliente.includes(searchValue)) {
+                row.style.display = '';
+                found = true; // Um cliente foi encontrado
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Exibir alerta se nenhum cliente for encontrado
+        if (!found) {
+            alert("Nenhum cliente encontrado.");
+        }
+    });
+    // Supondo que você esteja usando jQuery para fazer a requisição AJAX
+
+$(document).ready(function() {
+    $('form').submit(function(event) {
+        
+
+        // Captura o formulário atual
+        var form = $(this);
+
+        // Faz a requisição AJAX para finalizar o processo
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(), // Serializa os dados do formulário
+            success: function(response) {
+                // Recarrega a página após finalizar o processo
+                location.reload();
+            },
+            error: function(xhr, errmsg, err) {
+                console.log('Erro ao finalizar o processo:', err);
+                // Exibe uma mensagem de erro genérica, se ocorrer algum problema na requisição
+                alert('Erro ao finalizar o processo. Por favor, tente novamente.');
+            }
+        });
+    });
+});
+
+
+</script>
+
+
 
     </body>
 {% endblock %}

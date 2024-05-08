@@ -1,84 +1,4 @@
-<style>
-    .badge-nota-count {
-        top: 50px;
-        right: 130px;
-        font-size: 0.6em;
-        color: #051139;
-        border-radius: 50%;
-        padding: 2px 5px;
-    }
-    /* Adiciona uma transição suavizada para as propriedades desejadas */
-    .smooth-transition .kanban-board {
-        transition: background-color 0.3s ease, border-radius 0.3s ease;
-    }
-    
-    /* Quando a guia estiver ativa, adicione uma classe com uma transição para ela também */
-    .smooth-transition .kanban-board.active {
-        transition: background-color 0.3s ease, border-radius 0.3s ease;
-    }
-    
-    .tab-buttons {
-      margin-bottom: 20px;
-      border-radius: 10px; 
-    }
-    
-    .tab-button {
-    
-      background-color: #051139;
-      border: none;
-      outline: none;
-      cursor: pointer;
-      padding: 10px 15px;
-      transition: background-color 0.3s;
-      border-radius: 10px; 
-    }
-    
-    .tab-button:hover {
-      background-color: #111c44;
-    }
-    
-    .tab-button.active {
-      background-color: #111c44 !important;
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block !important;
-    }
-    
-    .kanban-container {
-        overflow-x: auto;
-    }
-    
-    .kanban-board {
-        display: inline-block;
-        vertical-align: top;
-        overflow-y: auto;
-        border-radius: 10px;
-        margin: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        background-color: #f8f8f8;
-        padding: 1px;
-    }
-    
-    .kanban-item {
-        border-radius: 6px;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: white !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        color: white;
-    }
-    
-    #Kanban {
-        width: auto;
-        color: black;
-    }
-    
-    </style>
+
     {% extends 'base.html' %}
     {% load custom_tags %}
     {% block main_content %}
@@ -95,6 +15,7 @@
     <!-- Kanban scripts -->
     <script src="{% static 'js/plugins/dragula.min.js' %}"></script>
     <link href="{% static 'css/jkanban.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/listacliente.css' %}" rel="stylesheet">
     <script src="{% static 'js/plugins/jkanban.min.js' %}"></script>
           </head>
           <body class="g-sidenav-show bg-gray-100">         
@@ -106,13 +27,13 @@
                    <div class="flex justify-between items-center mb-6">
                       <h2 class="h2">Clientes</h2>
                       {% if messages %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {% for message in messages %}
-            {{ message }}
-        {% endfor %}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-{% endif %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
                       <input type="text" placeholder="Pesquisar cliente..." id="searchInput" class="input-group p-2 rounded-md w-64 focus:ring-2 focus:ring-indigo-600 focus:outline-none text-black">
                    </div>
                    <div class="tab-buttons">
@@ -172,11 +93,7 @@
                         </form>
                     </div>
                     <!-- Estatísticas -->
-
-    
  
-
-    
 
                     <div class="table-responsive-sm" id="conteudoLista">
                         
@@ -373,7 +290,15 @@
                       </div>
                    </div>
                 </div>
-                {% for cliente in clientes %}
+                <!-- Adicione esta div no início do seu HTML -->
+<!-- Overlay de espera -->
+<div id="overlay">
+    <div class="loader"></div>
+    <h2>Aguarde...</h2>
+</div>
+
+<!-- Seu código HTML existente -->
+{% for cliente in clientes %}
     <!-- Modal para notas do cliente -->
     <div class="modal fade" id="notaModal-{{ cliente.id }}" tabindex="-1" aria-labelledby="notaModalLabel-{{ cliente.id }}" aria-hidden="true">
         <div class="modal-dialog">
@@ -386,43 +311,32 @@
                     <ul class="list-group">
                         {% for nota in cliente.notas %}
                             <li class="list-group-item">
-                                {{ nota.data_criacao|date:"d/m/Y H:i" }} - {{ nota.texto }} - 
+                                {{ nota.data_criacao|date:"d/m/Y H:i" }} - {{ nota.texto }} -
                                 {% if nota.criado_por %}
                                     {{ nota.criado_por.first_name }} {{ nota.criado_por.last_name }}
                                 {% else %}
                                     Usuário desconhecido
                                 {% endif %}
-                            </li>                                        
+                            </li>
+                            <a href="{% url 'concluir_processo' cliente_id=cliente.id %}" class="btn btn-success btn-sm btn-concluir-processo">Concluir</a>
                             <button class="btn btn-danger btn-sm" onclick="deletarNota({{ nota.id }}, '{{ cliente.id }}')">Excluir</button>
                         {% empty %}
                             <li class="list-group-item">Nenhuma nota encontrada.</li>
                         {% endfor %}
                     </ul>
                 </div>
-                <div class="modal-footer">
-                    <button id="concluirBtn-{{ cliente.id }}" class="btn btn-success btn-sm" onclick="concluirProcesso('{{ cliente.id }}')">Concluir</button>
-                    <div id="spinner-{{ cliente.id }}" class="spinner-border text-primary" role="status" style="display: none;">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 {% endfor %}
 
+<!-- Adicione este script no final do seu HTML -->
 <script>
-    function concluirProcesso(clienteId) {
-        // Exibir o spinner
-        $('#spinner-' + clienteId).show();
-        // Aqui você pode adicionar a lógica para enviar o processo para conclusão, como uma requisição AJAX
-
-        // Após o envio bem-sucedido, recarregar a página com um parâmetro indicando que o processo foi concluído com sucesso
-        // Este é um exemplo básico, você pode ajustá-lo conforme necessário
-        setTimeout(function() {
-            // Adicione um parâmetro 'concluido=true' para indicar que o processo foi concluído
-            window.location.href = window.location.href + '?concluido=true';
-        }, 2000); // Tempo de espera em milissegundos (2 segundos neste exemplo)
-    }
+     $(document).ready(function() {
+        $('.btn-concluir-processo').click(function() {
+            $('#overlay').css('display', 'flex'); // Mostra o overlay quando o botão "Concluir" é clicado
+        });
+    });
 </script>
 
             

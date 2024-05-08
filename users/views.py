@@ -1308,49 +1308,40 @@ def delete_expense(request, expense_id):
     return redirect('financas_view')
 
 
-# Financeiro
 
+# Define o codificador personalizado
 class DecimalEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
         return super(DecimalEncoder, self).default(obj)
 
-
-def calcular_saldo(data):
-    saldo = 0
-    for item in data:
-        receitas = item.get('receitas', Decimal('0')) or Decimal('0')
-        despesas = item.get('despesas', Decimal('0')) or Decimal('0')
-
-        item['saldo'] = receitas - despesas
-        saldo += item['saldo']
-        item['saldo_total'] = saldo
-
-    return data
-
+# Função para calcular saldo
+def calcular_saldo(totais):
+    saldo_acumulado = 0
+    for total in totais:
+        saldo_acumulado += float(total['receitas'] or 0)
+        saldo_acumulado -= float(total['despesas'] or 0)
+        total['saldo'] = saldo_acumulado
+    return totais
 # Sua view completa
 
-#financeiro
 def financas_view(request):
+    # Obtém todas as transações do usuário atual ordenadas pelo ID
+    transacoes = Transaction.objects.filter(user=request.user).order_by('id')
 
-    transacoes = Transaction.objects.filter(
-        user=request.user).order_by('id')  # Adicione 'order_by' aqui
-
+    # Inicializa o formulário de transação
     if request.method == 'POST':
-
         form = TransactionForm(request.POST)
-
         if form.is_valid():
             transacao = form.save(commit=False)
             transacao.user = request.user
             transacao.save()
-            
-
             return redirect('financas_view')
     else:
         form = TransactionForm()
 
+    # Calcula totais mensais e anuais de receitas e despesas
     totais_mensais = transacoes.annotate(
         mes=ExtractMonth('created_at'),
         ano=ExtractYear('created_at')
@@ -1359,32 +1350,20 @@ def financas_view(request):
         despesas=Sum('valor', filter=Q(tipo='despesa'))
     ).order_by('ano', 'mes')
 
-    totais_anuais = transacoes.annotate(
-        ano=ExtractYear('created_at')
-    ).values('ano').annotate(
-        receitas=Sum('valor', filter=Q(tipo='receita')),
-        despesas=Sum('valor', filter=Q(tipo='despesa'))
-    ).order_by('ano')
+    # Estrutura de dados para o gráfico
+    chart_data = {
+        'meses': [],
+        'receitas': [],
+        'despesas': []
+    }
 
-    totais_mensais_saldo = calcular_saldo(list(totais_mensais))
-    totais_anuais_saldo = calcular_saldo(list(totais_anuais))
+    for total in totais_mensais:
+        chart_data['meses'].append(f"{total['mes']}/{total['ano']}")
+        chart_data['receitas'].append(total['receitas'] or 0)
+        chart_data['despesas'].append(total['despesas'] or 0)
 
-    totais_mensais_json = json.dumps(
-        list(totais_mensais_saldo), cls=DecimalEncoder)
-    totais_anuais_json = json.dumps(
-        list(totais_anuais_saldo), cls=DecimalEncoder)
-    totais_mensais_json_saldo = json.dumps(
-        list(totais_mensais_saldo), cls=DecimalEncoder)
-    totais_anuais_json_saldo = json.dumps(
-        list(totais_anuais_saldo), cls=DecimalEncoder)
-
-    monthly_data_json = json.dumps(
-        [{'month': item['mes'], 'year': item['ano'], 'total': (item['receitas'] or Decimal('0')) - (item['despesas'] or Decimal('0'))} for item in totais_mensais_saldo], cls=DecimalEncoder
-    )
-
-    annual_data_json = json.dumps(
-        [{'year': item['ano'], 'total': (item['receitas'] or Decimal('0')) - (item['despesas'] or Decimal('0'))} for item in totais_anuais_saldo], cls=DecimalEncoder
-    )
+    # Convertendo totais mensais para JSON usando o codificador personalizado
+    totais_mensais_json = json.dumps(chart_data, cls=DecimalEncoder)
 
     # Aplicar filtro com base na descrição, se fornecido
     search_description = request.GET.get('search_description')
@@ -1403,274 +1382,55 @@ def financas_view(request):
     except EmptyPage:
         transacoes = paginator.page(paginator.num_pages)
 
-    # Cálculo do total geral de receitas e despesas
-    total_receita_geral = totais_mensais.aggregate(Sum('receitas'))[
-        'receitas__sum'] or 0
-    total_despesa_geral = totais_mensais.aggregate(Sum('despesas'))[
-        'despesas__sum'] or 0
+    # Calcular totais gerais de receitas e despesas
+    total_receita_geral = totais_mensais.aggregate(Sum('receitas'))['receitas__sum'] or 0
+    total_despesa_geral = totais_mensais.aggregate(Sum('despesas'))['despesas__sum'] or 0
     total_geral = total_receita_geral - total_despesa_geral
 
+    # Obter despesas fixas
     fixed_expenses = get_fixed_expenses(request.user)
-    dias = [i for i in range(1, 32)]
 
-    despesas = Transaction.objects.filter(tipo='DESPESA').aggregate(
-        total=models.Sum('valor'))['total'] or 0
-    receitas = Transaction.objects.filter(tipo='RECEITA').aggregate(
-        total=models.Sum('valor'))['total'] or 0
-    total_receitas = Transaction.objects.filter(
-        user=request.user, tipo='RECEITA').aggregate(total=Sum('valor'))['total'] or 0
-    total_despesas = Transaction.objects.filter(
-        user=request.user, tipo='DESPESA').aggregate(total=Sum('valor'))['total'] or 0
-    saldo = receitas - despesas
+    # Obter transações do mês atual
+    current_month_transactions = Transaction.objects.filter(
+        user=request.user,
+        created_at__month=timezone.now().month,
+        created_at__year=timezone.now().year
+    )
 
-    # Obter a contagem de vários modelos
+    # Calcular despesas totais e receitas totais
+    total_despesas = current_month_transactions.filter(tipo='despesa').aggregate(total=Sum('valor'))['total'] or 0
+    total_receitas = current_month_transactions.filter(tipo='receita').aggregate(total=Sum('valor'))['total'] or 0
+
+    # Calcular saldo atual
+    saldo = total_receitas - total_despesas
+
+    # Obter contagem de vários modelos
     total_corretores = Corretores.objects.count()
     total_clientes = Cliente.objects.count()
     total_correspondentes = Correspondente.objects.count()
+
+    # Obter transações recentes
     recent_transactions = Transaction.objects.all().order_by('-id')[:8]
 
-    total_proprietarios = Proprietario.objects.count()
-    total_contatos = Contato.objects.count()
-    contatos_hoje = Contato.objects.filter(
-        data_registro=datetime.now().date()).count()
-    contatos_7_dias = Contato.objects.filter(
-        data_registro__gte=datetime.now() - timedelta(days=7)).count()
-
-    status_counts = Cliente.objects.values(
-        'status').annotate(total=Count('status'))
-    status_counts_dict = {item['status']: item['total']
-                          for item in status_counts}
-    all_statuses = [
-        {'status': choice[0], 'total': status_counts_dict.get(
-            choice[0], 0), 'display': choice[1]}
-        for choice in Cliente.STATUS_CHOICES
-    ]
-
-
-    # Gerar dados mensais
-    monthly_counts = Cliente.objects.filter(data_de_criacao__isnull=False).annotate(
-        month=ExtractMonth('data_de_criacao'),
-        year=ExtractYear('data_de_criacao')
-    ).values('month', 'year').annotate(total=Count('id')).order_by('year', 'month')
-
-    # Gerar dados anuais
-    annual_counts = Cliente.objects.filter(data_de_criacao__isnull=False).annotate(
-        year=ExtractYear('data_de_criacao')
-    ).values('year').annotate(total=Count('id')).order_by('year')
-
-    # Converter os QuerySets em JSON
-    monthly_data_json = json.dumps(list(monthly_counts))
-    annual_data_json = json.dumps(list(annual_counts))
-
-    # Mapeia o número do mês para o nome do mês
-    months = {
-        1: 'Jan', 2: 'Fev', 3: 'Mar', 4: 'Abr', 5: 'Mai', 6: 'Jun',
-        7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'
-    }
-
-    # Corrige os rótulos do gráfico
-    chart_labels = []
-    for entry in monthly_counts:
-        month = entry.get('month')
-        year = entry.get('year')
-        if month and month in months:
-            chart_labels.append(f"{months[month]} {year}")
-        else:
-            chart_labels.append(f"Mês Desconhecido {year if year else ''}")
-
-    chart_data = {
-        'labels': chart_labels,
-        'data': [entry.get('total', 0) for entry in monthly_counts]
-    }
-
-    chart_data_json = json.dumps(chart_data)
-
-    today = datetime.now().day
-    expenses_due_soon = [expense for expense in fixed_expenses if 0 < (
-        expense.due_day - today) <= 3]
-
-    current_year = datetime.now().year
-    last_year = current_year - 1
-    current_month = datetime.now().month
-
-    total_current = Cliente.objects.filter(
-        data_de_criacao__year=current_year,
-        data_de_criacao__month=current_month
-    ).count()
-    total_last_year = Cliente.objects.filter(
-        data_de_criacao__year=last_year,
-        data_de_criacao__month=current_month
-    ).count()
-
-    try:
-        percent_change = (
-            (total_current - total_last_year) / total_last_year) * 100
-    except ZeroDivisionError:
-        percent_change = 0
-
-    if request.method == 'POST':
-        form_type = request.POST.get('form_type')
-        
-
-        if form_type == 'transacao':
-            
-            description = request.POST.get('description')
-            tipo = request.POST.get('tipo')
-            valor = request.POST.get('valor')
-
-            if not (description and tipo and valor):
-                messages.error(request, "Por favor, preencha todos os campos.")
-                return redirect('financas_view')
-
-            if tipo == "DESPESA_FIXA":
-                due_day = request.POST.get('due_day') or 1
-                FixedExpense.objects.create(description=description, due_day=int(
-                    due_day), amount=valor, user=request.user)
-                messages.success(
-                    request, "Despesa fixa adicionada com sucesso.")
-            else:
-                Transaction.objects.create(
-                    description=description, tipo=tipo, valor=valor, user=request.user)
-                messages.success(request, "Transação adicionada com sucesso.")
-
-        elif form_type == 'vendas_corretor':
-           
-            nome = request.POST.get('nome')
-            valor_total_pagar = request.POST.get('valor_total_pagar')
-            valor_pago = request.POST.get('valor_pago')
-            nome_corretor = request.POST.get('nome_corretor')
-            valor_faltante = request.POST.get('valor_faltante')
-            tipo = request.POST.get('tipo')
-
-            try:
-                VendaCorretor.objects.create(
-                    nome=nome,
-                    valor_total_pagar=float(valor_total_pagar),
-                    valor_pago=float(valor_pago),
-                    nome_corretor=nome_corretor,
-                    valor_faltante=float(valor_faltante),
-                    tipo=tipo
-                )
-                messages.success(
-                    request, "Venda por corretor adicionada com sucesso.")
-            except Exception as e:
-                messages.error(request, f"Erro ao adicionar venda: {e}")
-
-        return redirect('financas_view')
-
-    vendas_corretores_list = VendaCorretor.objects.all()
-    paginator = Paginator(vendas_corretores_list, 5)
-
-    page_number = request.GET.get('page')
-    vendas_corretores = paginator.get_page(page_number)
-    clientes = Cliente.objects.all()
-    corretores = Corretores.objects.all()
-
-    # Obter a contagem de clientes por corretor no mês atual
-    top_corretores_mes_atual = Cliente.objects.filter(
-        data_de_criacao__month=current_month,
-        data_de_criacao__year=current_year
-    ).values(
-        'corretor__first_name',
-        'corretor__username'
-    ).annotate(
-        total=Count('id'),
-        month=ExtractMonth('data_de_criacao')
-    ).order_by('-total')[:5]
-
-    
-
-    # Se não houver resultados com 'first_name', tente 'username'
-    if not top_corretores_mes_atual.exists():
-        top_corretores_mes_atual = Cliente.objects.filter(
-            data_de_criacao__month=current_month,
-            data_de_criacao__year=current_year
-        ).values(
-            'corretor__username'
-        ).annotate(
-            total=Count('id'),
-            month=ExtractMonth('data_de_criacao')
-        ).order_by('-total')[:15]
-
-    # Criar a lista final de top corretores
-    top_corretores_list = [
-        {
-            'nome': entry.get('corretor__first_name') or entry.get('corretor__username') or 'Nome Desconhecido',
-            'total': entry['total'],
-            'month': entry['month']
-        }
-        for entry in top_corretores_mes_atual
-    ]
-
-    # Imprima informações para depuração
-    
-
-    processos = Processo.objects.all().order_by('-data_inicio')
-
-    processos_em_andamento = [
-        processo for processo in processos if processo.data_finalizacao is None]
-    total_processos_em_andamento = len(processos_em_andamento)
-    
-
-    # Calcular o progresso para cada processo
-    for processo in processos:
-        processo.progresso = calcular_progresso(
-            processo, processo.id, processo.cliente)
-
-    
-
-    context = {
-        'top_corretores_list': top_corretores_list,
-        'corretores': corretores,
-        'processos': processos_em_andamento,
-        'total_processos_em_andamento': total_processos_em_andamento,
-        'current_year': current_year,
-        'current_month': current_month,
-        'percent_change': int(percent_change),
-        'monthly_data_json': monthly_data_json,
-        'annual_data_json': annual_data_json,
-        'chart_data_json': chart_data_json,
-        'chart_data': chart_data,
-        'expenses_due_soon': expenses_due_soon,
-        'total_proprietarios': total_proprietarios,
-        'total_contatos': total_contatos,
-        'contatos_hoje': contatos_hoje,
-        'contatos_7_dias': contatos_7_dias,
-        'recent_transactions': recent_transactions,
-        'total_corretores': total_corretores,
-        'total_clientes': total_clientes,
-        'total_correspondentes': total_correspondentes,
-        'saldo': saldo,
-        'despesas': despesas,
-        'receitas': receitas,
-        'fixed_expenses': fixed_expenses,
-        'dias': dias,
-        'total_receitas': total_receitas,
-        'total_despesas': total_despesas,
-        'notas_privadas': NotaPrivada.objects.filter(user=request.user).order_by('-data'),
-        'all_statuses': all_statuses,
-        'username': request.user.username,
-        'vendas_corretores': vendas_corretores,
-        'clientes': clientes,
+    # Renderizar o template
+    return render(request, 'financas.html', {
         'transacoes': transacoes,
         'form': form,
         'totais_mensais_json': totais_mensais_json,
-        'totais_anuais_json': totais_anuais_json,
-        'totais_mensais_json_saldo': totais_mensais_json_saldo,
-        'totais_anuais_json_saldo': totais_anuais_json_saldo,
-        'monthly_data_json': monthly_data_json,
-        'annual_data_json': annual_data_json,
         'total_receita_geral': total_receita_geral,
         'total_despesa_geral': total_despesa_geral,
         'total_geral': total_geral,
-        'username': request.user.username,
-    }
-
-    return render(request, 'financas.html', context)
-
-
-
+        'fixed_expenses': fixed_expenses,
+        'saldo': saldo,
+        'total_corretores': total_corretores,
+        'total_clientes': total_clientes,
+        'total_correspondentes': total_correspondentes,
+        'recent_transactions': recent_transactions,
+    })
+    
 # Adicione esta nova view para lidar com a solicitação AJAX
+
+# Financeiro
 
 
 @login_required
@@ -2301,6 +2061,9 @@ def update_process_status(processos):
         processo.num_notas_nao_concluidas = Nota_notification.objects.filter(processo=processo, nova=True).count()
         if processo.cliente:
             processo.opcoes_selecionadas = OpcaoSelecionada.objects.filter(processo=processo)
+            
+            
+            
 def lista_processos(request):
     corretores_group = Group.objects.filter(name='Corretores').first()
     is_corretor = corretores_group and request.user.groups.filter(pk=corretores_group.pk).exists()
@@ -2620,22 +2383,25 @@ def nova_nota_view(request, cliente_id, processo_id):
 
         if note_recipient == 'owner':
             proprietario = processo.proprietario
-            send_whatsapp_notification(proprietario, note_text)
+            send_whatsapp_notification(proprietario, note_text, cliente.id)  # Passando cliente.id
         elif note_recipient == 'broker':
             for corretor in processo.responsaveis.all():
-                send_whatsapp_notification(corretor, note_text)
+                send_whatsapp_notification(corretor, note_text, cliente.id)  # Passando cliente.id
 
         return redirect('nova_nota', cliente_id=cliente.id, processo_id=processo.id)
-
 
     return render(request, 'processos.html', {'cliente': cliente, 'processo': processo})
 
 
 
 
-def send_whatsapp_notification(destinatario, note_text):
-    whatsapp_num = f"{destinatario.telefone}@c.us"
-    message = f'Nova nota adicionada: {note_text}'
+
+
+def send_whatsapp_notification(corretor, note_text, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    whatsapp_num = f"{corretor.telefone}@c.us"
+    message = f'Nova nota adicionada ao processo do cliente {cliente.nome}: {note_text}'
+
 
     payload = {
         'number': whatsapp_num,
@@ -2648,6 +2414,7 @@ def send_whatsapp_notification(destinatario, note_text):
     if not response.json().get('success'):
         error_message = response.json().get('error', 'Unknown error')
         raise Exception(f"Failed to send WhatsApp notification due to: {error_message}")
+
     
 def send_whatsapp_notification2(destinatario, notification_text):
     whatsapp_num = f"{destinatario.telefone}@c.us"
@@ -2711,7 +2478,7 @@ def editar_cliente(request, cliente_id):
     notas = Nota.objects.filter(cliente=cliente)
     
     # Verificar se há uma nova nota adicionada
-    nova_nota = cliente.notas.filter(nova=True).last()
+    nova_nota = Nota.objects.filter(cliente=cliente, nova=True).last()
     if nova_nota:
         corretor = cliente.corretor  # Pegar o corretor do cliente
         mensagem = f"Nova nota adicionada para o cliente: {cliente.nome}.\nDetalhes da nota: *{nova_nota.texto}*"
@@ -2722,6 +2489,7 @@ def editar_cliente(request, cliente_id):
         nova_nota.save()
 
     return render(request, 'editar_cliente.html', {'form': form, 'cliente': cliente, 'notas': notas})
+
 
 
 

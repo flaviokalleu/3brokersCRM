@@ -59,7 +59,7 @@
     
     <!-- Estatísticas -->
 <div class="row">
-    <div class="col-md-2 offset-md-1">
+    <div class="col-md-3">
         <div class="card text-white bg-primary mb-4">
             <div class="card-body">
                 <h5 class="card-title">Total de Clientes</h5>
@@ -67,31 +67,37 @@
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+
+    <div class="col-md-3">
         <div class="card text-white bg-success mb-4">
             <div class="card-body">
                 <h5 class="card-title">Clientes Aprovados</h5>
-                <p class="card-text text-white">{{ status_count.Approved|default:0 }}</p>
+                <p class="card-text text-white">{{ clientes_aprovados }}</p>
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+
+    <div class="col-md-3">
         <div class="card text-white bg-danger mb-4">
             <div class="card-body">
                 <h5 class="card-title">Clientes Reprovados</h5>
-                <p class="card-text text-white">{{ status_count.Rejected|default:0 }}</p>
+                <p class="card-text text-white">{{ clientes_reprovados }}</p>
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+
+    <div class="col-md-3">
         <div class="card text-white bg-warning mb-4">
             <div class="card-body">
                 <h5 class="card-title">Este Mês</h5>
-                <p class="card-text text-white">{{ clientes_por_mes|default:0 }}</p>
+                <p class="card-text text-white">{{ novos_clientes_mes }}</p>
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+</div>
+
+<div class="row">
+    <div class="col-md-3">
         <div class="card text-white bg-success mb-4">
             <div class="card-body">
                 <h5 class="card-title">Processos em Aberto</h5>
@@ -99,7 +105,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Adicione aqui mais cartões de estatísticas, se necessário -->
 </div>
+
+    
 
 
 
