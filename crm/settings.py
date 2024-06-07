@@ -106,7 +106,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'crm',
-        'USER': 'root',
+        'USER': 'kalleu',
         # Coloque a senha do seu usuário root aqui, se aplicável.
         'PASSWORD': '99480231aA!',
         'HOST': '127.0.0.1',

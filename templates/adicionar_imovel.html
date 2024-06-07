@@ -10,18 +10,21 @@
                     <label for="id_nome_do_imovel" class="text-white">Nome do Imóvel:</label>
                     <input type="text" name="nome_do_imovel" id="id_nome_do_imovel" class="form-control" style="color: black;">
                     {% if form.nome_do_imovel.errors %}
-                    <span class="text-red-500">{{ form.nome_do_imovel.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.nome_do_imovel.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_descricao" class="text-white">Descrição do Imóvel:</label>
                     <textarea name="descricao" id="id_descricao" class="form-control" style="color: black;"></textarea>
+                    {% if form.descricao.errors %}
+                        <span class="text-red-500">{{ form.descricao.errors.0 }}</span>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_endereco" class="text-white">Endereço:</label>
                     <input type="text" name="endereco" id="id_endereco" class="form-control" style="color: black;">
                     {% if form.endereco.errors %}
-                    <span class="text-red-500">{{ form.endereco.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.endereco.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
@@ -36,46 +39,63 @@
                     {% endif %}
                 </div>
                 <div class="form-group">
+                    <label for="id_quartos" class="text-white">Quartos:</label>
+                    <input type="text" name="quartos" id="id_quartos" class="form-control" style="color: black;">
+                    {% if form.quartos.errors %}
+                        <span class="text-red-500">{{ form.quartos.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_banheiro" class="text-white">Banheiro:</label>
+                    <input type="text" name="banheiro" id="id_banheiro" class="form-control" style="color: black;">
+                    {% if form.banheiro.errors %}
+                        <span class="text-red-500">{{ form.banheiro.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="form-group">
                     <label for="id_tags" class="text-white">Tags:</label>
                     <select name="tags" id="id_tags" class="form-control" multiple style="color: black;">
-                        {% for tag in form.tags.field.queryset %}
-                            <option value="{{ tag.pk }}">{{ tag.name }}</option>
+                        {% for tag in form.fields.tags.queryset %}
+                            <option value="{{ tag.id }}" {% if tag in form.instance.tags.all %}selected{% endif %}>{{ tag.name }}</option>
                         {% endfor %}
                     </select>
+                    {% if form.tags.errors %}
+                        <span class="text-red-500">{{ form.tags.errors.0 }}</span>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_valor_de_avaliacao" class="text-white">Valor de Avaliação:</label>
                     <input type="text" name="valor_de_avaliacao" id="id_valor_de_avaliacao" class="form-control" style="color: black;">
                     {% if form.valor_de_avaliacao.errors %}
-                    <span class="text-red-500">{{ form.valor_de_avaliacao.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.valor_de_avaliacao.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_valor_de_venda" class="text-white">Valor de Venda:</label>
                     <input type="text" name="valor_de_venda" id="id_valor_de_venda" class="form-control" style="color: black;">
                     {% if form.valor_de_venda.errors %}
-                    <span class="text-red-500">{{ form.valor_de_venda.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.valor_de_venda.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_documentacao" class="text-white">Documentação:</label>
                     <input type="file" name="documentacao" id="id_documentacao" class="form-control" style="color: black;">
                     {% if form.documentacao.errors %}
-                    <span class="text-red-500">{{ form.documentacao.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.documentacao.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_imagens" class="text-white">Imagens:</label>
                     <input type="file" name="imagens" id="id_imagens" class="form-control" multiple accept="image/*">
                     {% if form.imagens.errors %}
-                    <span class="text-red-500">{{ form.imagens.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.imagens.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_imagem_de_capa" class="text-white">Imagem de Capa:</label>
                     <input type="file" name="imagem_de_capa" id="id_imagem_de_capa" class="form-control" accept="image/*">
                     {% if form.imagem_de_capa.errors %}
-                    <span class="text-red-500">{{ form.imagem_de_capa.errors.0 }}</span>
+                        <span class="text-red-500">{{ form.imagem_de_capa.errors.0 }}</span>
                     {% endif %}
                 </div>
                 <div class="form-group">
@@ -87,6 +107,9 @@
                         <option value="Luziania">Luziânia - Goias</option>
                         <option value="Brasilia">Brasília - Distrito Federal</option>
                     </select>
+                    {% if form.localizacao.errors %}
+                        <span class="text-red-500">{{ form.localizacao.errors.0 }}</span>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="id_exclusivo" class="text-white">Exclusivo:</label>

@@ -15,7 +15,7 @@
             <div class="card h-100">
                 {% if imovel.imagens.exists %}
                 {% with primeira_imagem=imovel.imagens.first %}
-                <img src="{{ primeira_imagem.imagem.url }}" class="card-img-top" alt="Imagem do Imóvel">
+                <img src="{{ primeira_imagem.imagem.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Imagem do Imóvel">
                 {% endwith %}
                 {% else %}
                 <div class="card-img-top bg-gray-300 d-flex justify-content-center align-items-center" style="height: 200px;">
@@ -55,9 +55,11 @@
         {% endfor %}
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.min.js"></script>
 {% endblock %}

@@ -479,58 +479,67 @@ class VideoView(models.Model):
     
 
 
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
 
-    def __str__(self):
-        return self.name
+
+
+
+from django.db import models
 
 class Imovel(models.Model):
-    # Campos existentes
     nome_do_imovel = models.CharField(max_length=255, blank=True, null=True)
-    endereco = models.CharField(max_length=255, blank=True, null=True)
+    endereco = models.CharField(max_length=255)
+    banheiro = models.CharField(max_length=255, blank=True, null=True)
+    quartos = models.CharField(max_length=255, blank=True, null=True)
     tipo = models.CharField(max_length=50)
-    valor_de_avaliacao = models.CharField(max_length=20)  # Aceitará formatos como "1.500,00"
-    valor_de_venda = models.CharField(max_length=20)  # Aceitará formatos como "1.500,00"
+    valor_de_avaliacao = models.DecimalField(max_digits=10, decimal_places=2)  # Use DecimalField para valores monetários
+    valor_de_venda = models.DecimalField(max_digits=10, decimal_places=2)
     documentacao = models.FileField(upload_to='imovel_documentos/', blank=True, null=True)
-    tags = models.ManyToManyField(Tag)  # Campo modificado para ManyToMany com a tabela Tag
-    
-    # Campo para imagem de capa
     imagem_de_capa = models.ImageField(upload_to='imovel_imagens/', blank=True, null=True)
-
-    # Campo para imagens associadas
     imagens = models.ManyToManyField('Imagem', blank=True, related_name='imoveis')
-
-    # Campo de localização
+    
     LOCALIZACAO_CHOICES = [
         ('Valparaiso_de_Goias', 'Valparaiso de Goiás - Goiás'),
         ('Cidade_Ocidental', 'Cidade Ocidental - Goiás'),
-        ('Jardim_Ingá', 'Jardim Ingá - Goias'),
-        ('Luziania', 'Luziânia - Goias'),
+        ('Jardim_Ingá', 'Jardim Ingá - Goiás'),
+        ('Luziania', 'Luziânia - Goiás'),
         ('Brasilia', 'Brasília - Distrito Federal'),
     ]
     localizacao = models.CharField(max_length=50, choices=LOCALIZACAO_CHOICES)
-
-    # Novos campos
+    
     exclusivo = models.BooleanField(default=False, verbose_name='Exclusivo?')
     tem_inquilino = models.BooleanField(default=False, verbose_name='Tem Inquilino?')
     situacao_do_imovel = models.TextField(blank=True, null=True, verbose_name='Situação do Imóvel')
     observacoes = models.TextField(blank=True, null=True, verbose_name='Observações')
     
-    # Novo campo para identificar se o imóvel é novo, usado ou ágio
     STATUS_CHOICES = [
         ('NOVO', 'Novo'),
         ('USADO', 'Usado'),
         ('AGIO', 'Ágio'),
     ]
     status = models.CharField(max_length=5, choices=STATUS_CHOICES, default='NOVO')
-
-    # Novo campo para descrição do imóvel
     descricao = models.TextField(blank=True, null=True, verbose_name='Descrição do Imóvel')
+
+    # Novo campo para associar tags
+    tags = models.ManyToManyField('Tag', blank=True, related_name='imoveis')
 
     def __str__(self):
         return self.endereco
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class ImovelTag(models.Model):
+    imovel = models.ForeignKey('Imovel', on_delete=models.CASCADE)
+    tag = models.ForeignKey('Tag', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('imovel', 'tag')
+
+    def __str__(self):
+        return f'{self.imovel} - {self.tag}'
 
 class Imagem(models.Model):
     imagem = models.ImageField(upload_to='imovel_images/', blank=True, null=True)

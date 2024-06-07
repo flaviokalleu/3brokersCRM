@@ -1,4 +1,4 @@
-import io
+﻿import io
 import logging
 from pathlib import Path
 from django.http import HttpResponse
@@ -123,11 +123,46 @@ from .models import Cliente
 
 
 def index(request):
-    # Recuperar todos os objetos Imovel do banco de dados
-    imoveis = Imovel.objects.all()
-    # Passar os imóveis recuperados para o template usando um contexto
-    context = {'imoveis': imoveis}
+    # Recuperar todas as tags
+    tags = Tag.objects.all()
+    
+    if tags.exists():
+        # Selecionar aleatoriamente uma tag
+        random_tag = random.choice(tags)
+        
+        # Recuperar os imóveis que possuem a tag selecionada
+        imoveis_tag = Imovel.objects.filter(tags=random_tag)
+        
+        # Recuperar os imóveis novos
+        imoveis_novos = Imovel.objects.filter(tipo='NOVO')
+        
+        # Recuperar os imóveis usados
+        imoveis_usados = Imovel.objects.filter(tipo='USADO')
+        
+        # Recuperar os imóveis ágio
+        imoveis_agios = Imovel.objects.filter(tipo='AGIO')
+        
+        # Passar os imóveis e o nome da tag aleatória para o template usando um contexto
+        context = {
+            'imoveis_novos': imoveis_novos,
+            'imoveis_usados': imoveis_usados,
+            'imoveis_agios': imoveis_agios,
+            'imoveis_tag': imoveis_tag,
+            'tag_name': random_tag.name
+        }
+    else:
+        # Caso não existam tags, passar uma lista vazia de imóveis e uma mensagem de erro
+        context = {
+            'imoveis_novos': [],
+            'imoveis_usados': [],
+            'imoveis_agios': [],
+            'imoveis_tag': [],
+            'tag_name': None,
+            'error_message': 'Nenhuma tag disponível.'
+        }
+
     return render(request, 'index.html', context)
+
 
 @csrf_exempt
 def backup_view(request):
@@ -147,16 +182,30 @@ def backup_view(request):
     
 def allimoveis(request):
     tipo_imovel = request.GET.get('tipo_imovel')
+    localizacao = request.GET.get('localizacao')
+    tags = request.GET.getlist('tags')  # getlist para pegar múltiplas tags
+
     imoveis_list = Imovel.objects.all()
 
     if tipo_imovel:
         imoveis_list = imoveis_list.filter(tipo=tipo_imovel)
+    
+    if localizacao:
+        imoveis_list = imoveis_list.filter(localizacao=localizacao)
+
+    if tags:
+        imoveis_list = imoveis_list.filter(tags__name__in=tags).distinct()
 
     paginator = Paginator(imoveis_list, 20)  # 20 imóveis por página
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'allimoveis.html', {'page_obj': page_obj})
+    all_tags = Tag.objects.all()
+
+    return render(request, 'allimoveis.html', {
+        'page_obj': page_obj,
+        'all_tags': all_tags
+    })
 
 
 
@@ -2190,9 +2239,12 @@ def lista_processos(request):
                 opcoes_unicas.add(opcao.opcao)
 
     opcoes_por_tipo_processo_json = json.dumps(opcoes_por_tipo_processo)
+    order_of_options = ['Pendente', 'Conformidade', 'Conforme', 'Inconforme', 'Emissão de minuta', 'Contrato assinado', 'Aguardando Comissão', 'Entrega de chaves', 'Aguardando Laudo', 'Cartório', 'Finalizado']
+
+    sorted_processos = sorted(processos, key=lambda p: order_of_options.index(p.opcoes_selecionadas.last().opcao) if p.opcoes_selecionadas.exists() and p.opcoes_selecionadas.last().opcao in order_of_options else len(order_of_options))
 
     return render(request, 'processos.html', {
-        'processos': processos,
+        'processos': sorted_processos,
         'total_processos': total_processos,
         'tipos_processo': tipos_processo,        
         'clientes': clientes,
@@ -2646,6 +2698,8 @@ def registrar_visualizacao(request):
 import emoji
 from django.utils.html import escape
 
+logger = logging.getLogger(__name__)
+
 def adicionar_imovel(request):
     if request.method == 'POST':
         form = ImovelForm(request.POST, request.FILES)
@@ -2658,7 +2712,7 @@ def adicionar_imovel(request):
             imovel.exclusivo = exclusivo
             imovel.tem_inquilino = tem_inquilino
             imovel.situacao_do_imovel = request.POST.get('situacao_do_imovel')
-            
+
             # Trata emojis na descrição do imóvel
             descricao = request.POST.get('descricao')
             if descricao:
@@ -2669,23 +2723,39 @@ def adicionar_imovel(request):
 
             # Verifica se uma imagem de capa foi fornecida
             if 'imagem_de_capa' in request.FILES:
-                imovel.imagem_de_capa = request.FILES['imagem_de_capa']
-                imovel.save()
+                capa = request.FILES['imagem_de_capa']
+                try:
+                    imovel.imagem_de_capa = capa
+                    imovel.save()
+                except Exception as e:
+                    logger.error(f"Erro ao salvar a imagem de capa: {e}")
+                    messages.error(request, f"Erro ao salvar a imagem de capa: {e}")
 
             # Itera sobre as imagens e as adiciona ao imóvel
             for imagem in request.FILES.getlist('imagens'):
-                imovel.imagens.create(imagem=imagem)
+                try:
+                    imovel.imagens.create(imagem=imagem)
+                except Exception as e:
+                    logger.error(f"Erro ao salvar a imagem: {e}")
+                    messages.error(request, f"Erro ao salvar a imagem: {e}")
 
-            # Manipula as tags
-            tags_input = request.POST.get('tags', '')  # Obtém as tags do formulário
-            tags_list = tags_input.split(',')  # Divide as tags separadas por vírgula em uma lista
-            for tag_name in tags_list:
-                tag_name = tag_name.strip()  # Remove espaços em branco das extremidades
-                tag, created = Tag.objects.get_or_create(name=tag_name)  # Obtém ou cria a tag
-                imovel.tags.add(tag)  # Adiciona a tag ao imóvel
+            # Adiciona as tags selecionadas
+            try:
+                tags = form.cleaned_data['tags']
+                imovel.tags.set(tags)
+                imovel.save()
+            except Exception as e:
+                logger.error(f"Erro ao salvar as tags: {e}")
+                messages.error(request, f"Erro ao salvar as tags: {e}")
 
             messages.success(request, 'Imóvel cadastrado com sucesso.')  # Adiciona mensagem de sucesso
             return redirect(request.path_info)  # Redireciona para a mesma página (recarregar a página)
+        else:
+            # Se o formulário for inválido, exibe os erros
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Erro no campo "{field}": {error}')
+            return redirect(request.path_info)  # Redireciona para a mesma página para mostrar os erros
     else:
         form = ImovelForm()
 
@@ -2731,9 +2801,14 @@ def excluir_imovel(request, imovel_id):
     
     if request.method == 'POST':
         imovel.delete()
-        
+        messages.success(request, 'Imóvel excluído com sucesso.')  # Adiciona a mensagem de sucesso
     
-    return render(request, 'lista_imoveis.html', {'imovel': imovel})
+        # Redireciona para alguma página após a exclusão, como a lista de imóveis
+    return redirect('lista_imoveis')  # Substitua 'nome_da_view' pelo nome da view para a lista de imóveis
+    
+    
+
+
 
 # views.py
 
@@ -2905,7 +2980,7 @@ def editar_processo(request, processo_id):
 
 
 def editar_imovel(request, imovel_id):
-    imovel = get_object_or_404(Imovel, id=imovel_id)
+    imovel = get_object_or_404(Imovel, pk=imovel_id)
     if request.method == 'POST':
         form = ImovelForm(request.POST, request.FILES, instance=imovel)
         if form.is_valid():
@@ -2913,7 +2988,9 @@ def editar_imovel(request, imovel_id):
             return redirect('lista_imoveis')
     else:
         form = ImovelForm(instance=imovel)
-    return render(request, 'editar_imovel.html', {'form': form})
+    tags = Tag.objects.all()  # Retrieve all tags from the database
+    return render(request, 'editar_imovel.html', {'form': form, 'tags': tags})
+
 
 def marketing_view(request):
     materiais = MaterialDeMarketing.objects.all()

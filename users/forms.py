@@ -271,7 +271,7 @@ class ImovelForm(forms.ModelForm):
 
     class Meta:
         model = Imovel
-        fields = ['nome_do_imovel', 'endereco', 'tipo', 'valor_de_avaliacao', 'valor_de_venda', 'documentacao', 'imagem_de_capa', 'imagens', 'localizacao', 'exclusivo', 'tem_inquilino', 'situacao_do_imovel', 'observacoes', 'tags', 'descricao']
+        fields = ['nome_do_imovel', 'endereco', 'tipo', 'valor_de_avaliacao', 'valor_de_venda', 'documentacao', 'imagem_de_capa', 'imagens', 'localizacao', 'exclusivo', 'tem_inquilino', 'situacao_do_imovel', 'observacoes', 'tags', 'descricao','banheiro','quartos']
         
         # Personalize os rótulos dos campos, se necessário
         labels = {
@@ -287,6 +287,8 @@ class ImovelForm(forms.ModelForm):
             'tem_inquilino': 'Tem Inquilino?',
             'situacao_do_imovel': 'Situação do Imóvel',
             'observacoes': 'Observações',
+            'banheiro': 'Banheiros',
+            'quartos': 'Quartos',
             'descricao': 'Descrição do Imóvel',  # Adicionado para o campo de descrição
         }
     
@@ -319,6 +321,7 @@ class ImovelForm(forms.ModelForm):
         except ValueError:
             raise ValidationError('Valor de venda inválido')
         return valor_de_venda
+
 
 class NovaNotaForm(forms.Form):
     cliente_id = forms.CharField(widget=forms.HiddenInput())  # Campo oculto para o ID do cliente

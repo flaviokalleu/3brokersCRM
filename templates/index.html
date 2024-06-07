@@ -7,7 +7,7 @@
   <title>3Brokers Imobiliaria</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-PopzDcrsUfEZ5KgGlH6AgOeIdLNKIQ7WykdNsFzRyj17MAZJY+lqKjD2hQgiFD+G3bqV0jD47ufhX4x2j+Xu4w==" crossorigin="anonymous" />
-
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
 </head>
@@ -66,52 +66,57 @@
 
 
 <header>
-  <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
+      <div class="max-w-screen-xl mx-auto p-4 flex flex-wrap items-center justify-between">
+        
+        <!-- Logo no canto esquerdo -->
         <a href="https://3brokers.com.br/" class="flex items-center space-x-3 rtl:space-x-reverse">
-            <img src="{% static 'img/logos/logo.png' %}" class="h-8" alt="New Logo">
-            
+            <img src="{% static 'img/logos/logo.png' %}" alt="New Logo" width="150">
         </a>
-        <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-            {% if user.is_authenticated %}
-            <!-- Se o usuário estiver autenticado, mostre o botão do dashboard -->
-            <a href="{% url 'login' %}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Dashboard</a>
-        {% else %}
-            <!-- Caso contrário, mostre o botão de login -->
-            <a href="{% url 'login' %}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</a>
-        {% endif %}
-        <!-- Ícones de Redes Sociais usando Bootstrap -->
-        <a href="#" class="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"><i class="bi bi-facebook"></i></a>
-        <a href="#" class="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"><i class="bi bi-instagram"></i></a>
-        <a href="#" class="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"><i class="bi bi-whatsapp"></i></a>
-
-        <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-sticky" aria-expanded="false">
-            <span class="sr-only">Open main menu</span>
-            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-            </svg>
-        </button>
-    </div>
-
-        
-        
-        <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
-            <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                <li>
-                    <a href="{% url 'index' %}" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Pagina Inicial</a>
-                </li>
-                <li>
-                    <a href="{% url 'allimoveis' %}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Todos os Imóveis</a>
-                </li>
-                
-                <li>
-                    <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20mais%20informa%C3%A7%C3%B5es" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Contato</a>
-                </li>
-            </ul>
+  
+        <!-- Menu button and links -->
+        <div class="flex items-center space-x-3 md:space-x-0 rtl:space-x-reverse md:order-2">
+          {% if user.is_authenticated %}
+              <!-- Se o usuário estiver autenticado, mostre o botão do dashboard -->
+              <a href="{% url 'login' %}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Dashboard</a>
+          {% else %}
+              <!-- Caso contrário, mostre o botão de login -->
+              <a href="{% url 'login' %}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</a>
+          {% endif %}
+          
+          <!-- Ícones de Redes Sociais -->
+          <a href="#" class="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"><i class="bi bi-whatsapp"></i></a>
+  
+          <!-- Menu button -->
+          <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-sticky" aria-expanded="false">
+              <span class="sr-only">Open main menu</span>
+              <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+              </svg>
+          </button>
         </div>
-    </div>
-</nav>
-</header>
+  
+        <!-- Navbar links -->
+        <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+          <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+              <li>
+                  <a href="{% url 'index' %}" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Pagina Inicial</a>
+              </li>
+              <li>
+                  <a href="{% url 'allimoveis' %}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Todos os Imóveis</a>
+              </li>
+              <li>
+                  <a href="https://api.whatsapp.com/send?phone=556192662202&text=Ol%C3%A1%20vim%20atrav%C3%A9s%20do%20site%2C%20quero%20mais%20informa%C3%A7%C3%B5es" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Contato</a>
+              </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+  
+  
 
 <!-- Seção 1: Banner -->
 
@@ -121,7 +126,7 @@
       Your browser does not support the video tag.
   </video>
   <div class="overlay"></div>
-  <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-56 relative">
+  <div class="absolute bottom-0 w-full text-center px-4 py-24 lg:py-96">
       <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">Invista Hoje mesmo no seu imóvel!</h1>
       <p class="mb-8 text-lg font-normal text-white lg:text-xl sm:px-16 lg:px-48">Não deixe para depois o que você pode fazer hoje! Saia do aluguel!</p>
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
@@ -144,6 +149,7 @@
   </div>
 </section>
 
+
 <script>
   document.querySelector('.animate-bounce').addEventListener('click', function() {
       window.scrollBy({
@@ -161,23 +167,78 @@
 
 
 
-<section id="new-properties" class="properties-section new-properties mt-8">
-  <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMÓVEIS NOVOS</h2>
-      <div class="grid grid-cols-3 gap-8">
-          {% for imovel in imoveis %}
-              {% if imovel.tipo == 'NOVO' %}
-                  <div class="bg-white shadow-lg rounded-lg overflow-hidden property-card">
-                      <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-full h-96 object-cover object-center">
-                      <div class="p-4">
-                          <a href="#" class="block text-center text-primary-700 font-semibold hover:text-primary-900">Ver Imóvel</a>
-                      </div>
-                  </div>
-              {% endif %}
-          {% endfor %}
-      </div>
-  </div>
+
+<section class="property" id="property">
+    <div class="container flex justify-between items-center">
+        <p class="section-subtitle">IMOVEIS NOVOS</p>
+        <a href="https://3brokers.com.br/imoveis/?tipo_imovel=NOVO&filter=" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Ver Todos</a>
+    </div>
+    <ul class="property-list has-scrollbar">
+        {% for imovel in imoveis_novos  %}
+            {% if imovel.tipo == 'NOVO' %}
+                <li>
+                    <div class="property-card">
+                        <figure class="card-banner">
+                            <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">
+                                <img src="{{ imovel.imagem_de_capa.url }}" class="w-100">
+                            </a>
+                            <div class="card-badge {% if imovel.exclusivo %}orange{% else %}green{% endif %}">
+                                {% for tag in imovel.tags.all %}
+                                    <span>{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="banner-actions text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                <button class="banner-actions-btn inline-block">
+                                    <ion-icon name="location"></ion-icon>
+                                    <span>{{ imovel.get_localizacao_display }}</span>
+                                </button>
+                            </div>
+                        </figure>
+                        <div class="card-content">
+                            
+                            <h3 class="h3 card-title">
+                                <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">{{ imovel.nome_do_imovel }}</a>
+                            </h3>
+                            <p class="card-text">{{ imovel.descricao|truncatewords:15 }}</p>
+                            <ul class="card-list">
+                                <li class="card-item">
+                                    <strong>{{ imovel.quartos }}</strong>
+                                    <ion-icon name="bed-outline"></ion-icon>
+                                    <span>quartos</span>
+                                </li>
+                                <li class="card-item">
+                                    <strong>{{ imovel.banheiro }}</strong>
+                                    <ion-icon name="man-outline"></ion-icon>
+                                    <span>Banheiro</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-author">
+                                <figure class="author-avatar">
+                                    <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-100">
+                                </figure>
+                                <div>
+                                    <p class="author-name">
+                                        <a href="#">3Brokers Imobiliária</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
 </section>
+
+
+        
+
+
+
+
 
 
 
@@ -186,80 +247,227 @@
 
 
 <!-- IMÓVEIS USADOS -->
-<section id="used-properties" class="properties-section used-properties mt-8">
-  <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">IMÓVEIS USADOS</h2>
-      <div class="grid grid-cols-3 gap-8">
-          {% for imovel in imoveis %}
-              {% if imovel.tipo == 'USADO' %}
-                  <div class="bg-white shadow-lg rounded-lg overflow-hidden property-card">
-                      <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-full h-96 object-cover object-center">
-                      <div class="p-4">
-                          <a href="#" class="block text-center text-primary-700 font-semibold hover:text-primary-900">Ver Imóvel</a>
+<section class="property" id="property">
+  <div class="container">
+    <div class="container flex justify-between items-center">
+        <p class="section-subtitle">IMOVEIS USADOS</p>
+        <a href="https://3brokers.com.br/imoveis/?tipo_imovel=USADO&filter=" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Ver Todos</a>
+    </div>
+      
+      <ul class="property-list has-scrollbar">
+          {% for imovel in imoveis_usados  %}
+            {% if imovel.tipo == 'USADO' %}
+              <li>
+                  <div class="property-card">
+                      <figure class="card-banner">
+                          <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">
+                              <img src="{{ imovel.imagem_de_capa.url }}"  class="w-100">
+                          </a>
+                          <div class="card-badge {% if imovel.exclusivo %}orange{% else %}green{% endif %}">
+                            {% for tag in imovel.tags.all %}
+                                <span>{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                          <div class="banner-actions text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            <button class="banner-actions-btn inline-block">
+                                <ion-icon name="location"></ion-icon>
+                                <span>{{ imovel.get_localizacao_display }}</span>
+                            </button>
+                        </div>
+                      </figure>
+                      <div class="card-content">
+                          
+                          <h3 class="h3 card-title">
+                              <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">{{ imovel.nome_do_imovel }}</a>
+                          </h3>
+                          <p class="card-text">{{ imovel.descricao|truncatewords:15 }}</p>
+                          <ul class="card-list">
+                              <li class="card-item">
+                                  <strong>{{ imovel.quartos }}</strong>
+                                  <ion-icon name="bed-outline"></ion-icon>
+                                  <span>quartos</span>
+                              </li>
+                              <li class="card-item">
+                                  <strong>{{ imovel.banheiro }}</strong>
+                                  <ion-icon name="man-outline"></ion-icon>
+                                  <span>Banheiro</span>
+                              </li>
+                          </ul>
+                      </div>
+                      <div class="card-footer">
+                          <div class="card-author">
+                              <figure class="author-avatar">
+                                  <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-100">
+                              </figure>
+                              <div>
+                                  <p class="author-name">
+                                      <a href="#">3Brokers Imobiliária</a>
+                                  </p>
+                              </div>
+                          </div>
                       </div>
                   </div>
-              {% endif %}
+              </li>
+            {% endif %}
           {% endfor %}
-      </div>
+      </ul>
   </div>
 </section>
+
+
 
 <!-- ÁGIOS -->
-<section id="agio-properties" class="properties-section agio-properties mt-8">
-  <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-extrabold dark:text-white text-center mt-8 mb-8">ÁGIOS</h2>
-      <div class="grid grid-cols-3 gap-8">
-          {% for imovel in imoveis %}
-              {% if imovel.tipo == 'AGIO' %}
-                  <div class="bg-white shadow-lg rounded-lg overflow-hidden property-card">
-                      <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-full h-96 object-cover object-center">
-                      <div class="p-4">
-                          <a href="#" class="block text-center text-primary-700 font-semibold hover:text-primary-900">Ver Imóvel</a>
+
+<section class="property" id="property">
+  <div class="container">
+    <div class="container flex justify-between items-center">
+        <p class="section-subtitle">AGIOS</p>
+        <a href="https://3brokers.com.br/imoveis/?tipo_imovel=AGIO&filter=" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Ver Todos</a>
+    </div>
+      
+      <ul class="property-list has-scrollbar">
+          {% for imovel in imoveis_agios  %}
+            {% if imovel.tipo == 'AGIO' %}
+              <li>
+                  <div class="property-card">
+                      <figure class="card-banner">
+                          <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">
+                              <img src="{{ imovel.imagem_de_capa.url }}"  class="w-100">
+                          </a>
+                          <div class="card-badge {% if imovel.exclusivo %}orange{% else %}green{% endif %}">
+                            {% for tag in imovel.tags.all %}
+                                <span>{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                          <div class="banner-actions text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            <button class="banner-actions-btn inline-block">
+                                <ion-icon name="location"></ion-icon>
+                                <span>{{ imovel.get_localizacao_display }}</span>
+                            </button>
+                        </div>
+                      </figure>
+                      <div class="card-content">
+                          
+                          <h3 class="h3 card-title">
+                              <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">{{ imovel.nome_do_imovel }}</a>
+                          </h3>
+                          <p class="card-text">{{ imovel.descricao|truncatewords:15 }}</p>
+                          <ul class="card-list">
+                              <li class="card-item">
+                                  <strong>{{ imovel.quartos }}</strong>
+                                  <ion-icon name="bed-outline"></ion-icon>
+                                  <span>quartos</span>
+                              </li>
+                              <li class="card-item">
+                                  <strong>{{ imovel.banheiro }}</strong>
+                                  <ion-icon name="man-outline"></ion-icon>
+                                  <span>Banheiro</span>
+                              </li>
+                          </ul>
+                      </div>
+                      <div class="card-footer">
+                          <div class="card-author">
+                              <figure class="author-avatar">
+                                  <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-100">
+                              </figure>
+                              <div>
+                                  <p class="author-name">
+                                      <a href="#">3Brokers Imobiliária</a>
+                                  </p>
+                              </div>
+                          </div>
                       </div>
                   </div>
-              {% endif %}
+              </li>
+            {% endif %}
           {% endfor %}
-      </div>
+      </ul>
   </div>
 </section>
 
-<section class="py-16 bg-gray-100">
-  <div class="container mx-auto px-4">
-    <div class="flex flex-col lg:flex-row items-center justify-center space-y-8 lg:space-y-0 lg:space-x-16">
-      <!-- Ilustração -->
-      <div class="w-full lg:w-1/2">
-        <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/social-proof/table-professor.svg" alt="Illustration" class="w-full h-auto rounded-lg shadow-lg">
-      </div>
-      <!-- Estatísticas -->
-      <div class="w-full lg:w-1/2">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">Social Proof through Statistics</h2>
-        <div class="flex flex-col space-y-6">
-          <!-- Estatística 1 -->
-          <div class="flex items-center">
-            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-              <span class="text-white text-lg font-bold">1</span>
-            </div>
-            <p class="text-gray-700">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          </div>
-          <!-- Estatística 2 -->
-          <div class="flex items-center">
-            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
-              <span class="text-white text-lg font-bold">2</span>
-            </div>
-            <p class="text-gray-700">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          </div>
-          <!-- Estatística 3 -->
-          <div class="flex items-center">
-            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mr-4">
-              <span class="text-white text-lg font-bold">3</span>
-            </div>
-            <p class="text-gray-700">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          </div>
-        </div>
-      </div>
+
+<section class="property" id="property">
+    <div class="container">
+        {% if tag_name %}
+            <p class="section-subtitle">Imóveis - {{ tag_name }}</p>
+        {% else %}
+            <p class="section-subtitle">Imóveis</p>
+        {% endif %}
+        
+        {% if imoveis_tag %}
+            <ul class="property-list has-scrollbar">
+                {% for imovel in imoveis_tag %}
+                    <li>
+                        <div class="property-card">
+                            <figure class="card-banner">
+                                <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">
+                                    <img src="{{ imovel.imagem_de_capa.url }}" class="w-100">
+                                </a>
+                                <div class="card-badge {% if imovel.exclusivo %}orange{% else %}green{% endif %}">
+                                    {% for tag in imovel.tags.all %}
+                                        <span>{{ tag.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="banner-actions text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    <button class="banner-actions-btn inline-block">
+                                        <ion-icon name="location"></ion-icon>
+                                        <span>{{ imovel.get_localizacao_display }}</span>
+                                    </button>
+                                </div>
+                                
+                                
+                            </figure>
+                            <div class="card-content">
+                                
+                                <h3 class="h3 card-title">
+                                    <a href="{% url 'detalhes_imovel' imovel_id=imovel.pk %}">{{ imovel.nome_do_imovel }}</a>
+                                </h3>
+                                <p class="card-text">{{ imovel.descricao|truncatewords:15 }}</p>
+                                <ul class="card-list">
+                                    <li class="card-item">
+                                        <strong>{{ imovel.quartos }}</strong>
+                                        <ion-icon name="bed-outline"></ion-icon>
+                                        <span>quartos</span>
+                                    </li>
+                                    <li class="card-item">
+                                        <strong>{{ imovel.banheiro }}</strong>
+                                        <ion-icon name="man-outline"></ion-icon>
+                                        <span>Banheiro</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-author">
+                                    <figure class="author-avatar">
+                                        <img src="{{ imovel.imagem_de_capa.url }}" alt="{{ imovel.nome }}" class="w-100">
+                                    </figure>
+                                    <div>
+                                        <p class="author-name">
+                                            <a href="#">3Brokers Imobiliária</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhum imóvel encontrado para a tag "{{ tag_name }}".</p>
+        {% endif %}
+        
+        {% if error_message %}
+            <p>{{ error_message }}</p>
+        {% endif %}
     </div>
-  </div>
 </section>
+
+
+  
+
 
 
 <section id="Accordion" class="container mx-auto">

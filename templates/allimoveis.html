@@ -32,7 +32,7 @@
     }
 
   </style>
-<body class="bg-white dark:bg-gray-800">
+
 
 <!-- Navbar -->
 
@@ -84,23 +84,37 @@
 
 
 <!-- Seção 2: Imóveis Novos -->
-
+<body class="bg-white dark:bg-gray-800">
 <section id="new-properties" class="properties-section new-properties mt-8">
     <div class="container mx-auto px-4">
         <h2 class="text-4xl font-extrabold text-center mt-8 mb-8">Imóveis Novos</h2>
 
-        <form id="filter-form" method="GET" class="flex items-center justify-center mb-8">
-            <div class="flex items-center mr-4">
-                <label for="tipo_imovel" class="mr-2">Filtrar por Tipo de Imóvel:</label>
-                <select name="tipo_imovel" id="tipo_imovel" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+        <form id="filter-form" method="GET" class="flex items-center justify-center mb-8 space-x-4">
+            <div class="mr-4">
+                <label for="tipo_imovel" class="mr-2 text-white">Tipo de Imóvel:</label>
+                <select name="tipo_imovel" id="tipo_imovel" class="rounded-md">
                     <option value="">Todos</option>
                     <option value="NOVO">Novo</option>
                     <option value="USADO">Usado</option>
                     <option value="AGIO">Ágio</option>
                 </select>
             </div>
-            <button type="submit" name="filter" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Filtrar</button>
+            <div class="mr-4">
+                <label for="localizacao" class="mr-2 text-white">Localização:</label>
+                <select name="localizacao" id="localizacao" class="rounded-md">
+                    <option value="">Todas</option>
+                    <option value="Valparaiso_de_Goias">Valparaíso de Goiás - Goiás</option>
+                    <option value="Cidade_Ocidental">Cidade Ocidental - Goiás</option>
+                    <option value="Jardim_Ingá">Jardim Ingá - Goiás</option>
+                    <option value="Luziania">Luziânia - Goiás</option>
+                    <option value="Brasilia">Brasília - Distrito Federal</option>
+                </select>
+            </div>
+            <button type="submit" name="filter" class="rounded-md bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Filtrar</button>
         </form>
+        
+        
+        
         
         <div id="property-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <!-- Início do bloco de exemplo -->
@@ -213,18 +227,15 @@
 
 
 <!-- Scripts do Bootstrap -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
 
-
 <script>
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark')
-    }
+    document.documentElement.classList.add('dark');
+    
 </script>
+
 </body>
 </html>

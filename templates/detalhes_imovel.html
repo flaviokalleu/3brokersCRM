@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Imobiliária</title>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
@@ -14,6 +16,11 @@
     .max-w-sm {
         margin-right: 10px; /* Ajuste o valor conforme necessário */
     }
+    #modal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* ou object-fit: cover; */
+}
 
     /* O último item não deve ter margem à direita para evitar espaçamento extra */
     .max-w-sm:last-child {
@@ -150,16 +157,34 @@
     </div>
 </nav>
 
-
 <!-- Seção 2: Galeria de Imóveis -->
 <section id="property-gallery" class="properties-section property-gallery mt-8">
-    <div class="grid gap-8 items-center py-8 px-4 mx-auto max-w-screen-xl xl:gap-16 md:grid md:grid-cols-2 sm:py-16 lg:px-6">
+    <div class="grid gap-8 py-8 px-4 mx-auto max-w-screen-xl xl:gap-16 md:grid md:grid-cols-2 sm:py-16 lg:px-6">
+        
+        <!-- Galeria de Imagens -->
+        <div class="relative">
+            <a href="#" id="open-modal">
+                <img class="h-auto max-w-full rounded-lg object-cover" src="{{ imovel.imagens.first.imagem.url }}" alt="Imagem do imóvel principal">
+            </a>
+            <div class="grid grid-cols-5 gap-4 absolute bottom-0 left-0 right-0 p-4 bg-gray-900 bg-opacity-50">
+                {% for imagem in imovel.imagens.all %}
+                <div class="overflow-hidden">
+                    <img class="w-full h-full rounded-lg object-cover cursor-pointer hover:opacity-75" onclick="openModal('{{ imagem.imagem.url }}')" src="{{ imagem.imagem.url }}" alt="Imagem do imóvel">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
         <!-- Descrição do imóvel -->
         <div class="description-container">
             <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">{{ imovel.nome_do_imovel }}</h2>
             <!-- Valor de Venda e Tipo de Imóvel como botões -->
             <div class="flex flex-wrap gap-2 mb-4">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Valor de Venda: R$ {{ imovel.valor_de_venda }}</button>
+                {% for tag in imovel.tags.all %}
+    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">{{ tag.name }}</button>
+{% endfor %}
+
+
                 <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tipo de Imóvel: {{ imovel.tipo }}</button>
             </div>            
             <p class="mb-6 font-bold text-white md:text-lg dark:text-white">Descrição:</p>
@@ -173,65 +198,34 @@
             </div>
         </div>
         
-        <!-- Galeria de Imagens -->
-        <div class="grid grid-cols-2 gap-2">
-            {% for imagem in imovel.imagens.all|slice:":4" %}
-            <div class="image-container">
-                <img class="rounded-lg" src="{{ imagem.imagem.url }}" alt="Imagem do imóvel">
-            </div>
-            {% endfor %}
-
-            <!-- Botão "Ver todas" -->
-            <button id="ver-todas-imagens" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Ver todas</button>
-        </div>
     </div>
 </section>
 
-<!-- Modal para exibir todas as imagens -->
-<div id="modal-imagens" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="grid grid-cols-2 gap-4">
-            {% for imagem in imovel.imagens.all %}
-            <div class="modal-image-container">
-                <img class="modal-image" src="{{ imagem.imagem.url }}" alt="Imagem do imóvel">
-            </div>
-            {% endfor %}
+<!-- Modal para exibir imagem em tamanho maior -->
+<!-- Modal para exibir imagem em tamanho maior -->
+<style>
+    #modal-imagens {
+        z-index: 9999; /* Define um valor alto para z-index */
+    }
+</style>
+
+<!-- Modal para exibir imagem em tamanho maior -->
+<div id="modal-imagens" class="modal fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex justify-center items-center hidden" onclick="closeModal()">
+    <div class="modal-content max-w-full bg-black p-4 relative" onclick="event.stopPropagation()">
+        <span class="close absolute top-0 right-0 cursor-pointer text-white text-2xl p-4">&times;</span>
+        <div class="flex justify-center items-center w-full h-full">
+            <button id="prev" class="text-black text-4xl p-2 rounded-full bg-white"><ion-icon name="chevron-back-outline" style="font-size: 2rem;"></ion-icon></button>
+            <img id="modal-image" class="modal-image max-h-screen object-contain" src="" alt="Imagem do imóvel">
+            <button id="next" class="text-black text-4xl p-2 rounded-full bg-white"><ion-icon name="chevron-forward-outline" style="font-size: 2rem;"></ion-icon></button>
         </div>
     </div>
 </div>
 
-<style>
-    /* Estilo para o contêiner de imagem */
-    .image-container {
-        width: 250px; /* Defina o tamanho desejado para as imagens */
-        height: 250px; /* Defina o tamanho desejado para as imagens */
-        overflow: hidden;
-    }
-
-    /* Estilo para as imagens */
-    .image-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover; /* Garante que a imagem cubra o contêiner */
-    }
-</style>
-
-
-
-
 <script>
-    document.getElementById("ver-todas-imagens").addEventListener("click", function() {
-        // Mostrar o modal ao clicar no botão
-        document.getElementById("modal-imagens").style.display = "block";
-    });
-
-    // Fechar o modal quando o usuário clicar fora dele
-    window.onclick = function(event) {
+    // Função para fechar o modal
+    function closeModal() {
         var modal = document.getElementById("modal-imagens");
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
+        modal.style.display = "none";
     }
 </script>
 
@@ -239,10 +233,44 @@
 
 
 
+<script>
+    var images = [];
+    {% for imagem in imovel.imagens.all %}
+    images.push("{{ imagem.imagem.url }}");
+    {% endfor %}
+    var currentImageIndex = 0;
+    var modal = document.getElementById("modal-imagens");
+    var modalImage = document.getElementById("modal-image");
+    var prevButton = document.getElementById("prev");
+    var nextButton = document.getElementById("next");
 
+    // Função para abrir o modal com a imagem clicada
+    function openModal(imageUrl) {
+        currentImageIndex = images.indexOf(imageUrl);
+        modalImage.src = imageUrl;
+        modal.style.display = "flex";
+    }
 
+    // Função para fechar o modal
+    function closeModal() {
+        modal.style.display = "none";
+    }
 
+    // Evento de clique no botão de fechar
+    document.querySelector(".close").addEventListener("click", closeModal);
 
+    // Evento de clique no botão anterior
+    prevButton.addEventListener("click", function() {
+        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+        modalImage.src = images[currentImageIndex];
+    });
+
+    // Evento de clique no botão seguinte
+    nextButton.addEventListener("click", function() {
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        modalImage.src = images[currentImageIndex];
+    });
+</script>
 
 
 <section class="bg-white dark:bg-gray-900 bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern.svg')] dark:bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern-dark.svg')]">
@@ -272,7 +300,7 @@
     
 </section>
 
-</section>
+
 <!-- Seção 5: Rodapé -->
 
 
@@ -305,12 +333,8 @@
 
 
 <script>
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark')
-    }
+    document.documentElement.classList.add('dark');
+    
 </script>
 </body>
 </html>

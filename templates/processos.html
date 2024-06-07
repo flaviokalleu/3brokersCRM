@@ -169,36 +169,54 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for processo in processos reversed %}
-                                <tr {% if processo.data_finalizacao %}class="bg-success"{% else %}{% if processo.opcoes_selecionadas.last.opcao == 'Pendente' %}class="bg-danger"{% endif %}{% endif %}>
-
+                                {% for processo in processos %}
+                                <tr {% if processo.data_finalizacao %}class=""{% endif %}>
                                     <td class="align-middle text-white">{{ processo.cliente.nome }}</td>
                                     <td class="align-middle text-white">{{ processo.tipo }}</td>
+                                    {% if processo.opcoes_selecionadas.exists %}
+                                        {% with processo.opcoes_selecionadas.last as ultima_opcao %}
+                                            {% if ultima_opcao.opcao == 'Pendente' %}
+                                                <td class="align-middle text-white bg-danger">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Aguardando Laudo' %}
+                                                <td class="align-middle text-white bg-light">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Conformidade' %}
+                                                <td class="align-middle text-white bg-primary">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Inconforme' %}
+                                                <td class="align-middle text-white bg-warning text-dark">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Conforme' %}
+                                                <td class="align-middle text-white bg-success">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Emissão de minuta' %}
+                                                <td class="align-middle text-white bg-info">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Contrato assinado' %}
+                                                <td class="align-middle text-white bg-dark">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Cartório' %}
+                                                <td class="align-middle text-white bg-warning">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Aguardando Comissão' %}
+                                                <td class="align-middle text-white bg-warning text-dark">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Entrega de chaves' %}
+                                                <td class="align-middle text-white bg-success text-dark">{{ ultima_opcao.opcao }}</td>
+                                            {% elif ultima_opcao.opcao == 'Finalizado' %}
+                                                <td class="align-middle text-white bg-info">{{ ultima_opcao.opcao }}</td>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <td class="align-middle text-white bg-dark">Sem Status</td>
+                                    {% endif %}
                                     <td class="align-middle text-white">
-                                        {% if processo.opcoes_selecionadas %}
-                                            {% with processo.opcoes_selecionadas.last as ultima_opcao %}
-                                                <span class="badge bg-primary">{{ ultima_opcao.opcao }}</span>
-                                            {% endwith %}
+                                        {% if processo.num_notas > 0 %}
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#notaModal-{{ processo.cliente.id }}">
+                                                <span class="badge {% if processo.num_notas_nao_concluidas > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ processo.num_notas }}</span>
+                                            </a>
                                         {% else %}
                                             <span class="badge bg-secondary">0</span>
                                         {% endif %}
-                                    </td>   
-                                    <td class="align-middle text-white">
-                                       
-                                        {% if processo.num_notas > 0 %}
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#notaModal-{{ processo.cliente.id }}">
-                                            <span class="badge {% if processo.num_notas_nao_concluidas > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ processo.num_notas }}</span>
-                                        </a>
-                                        {% else %}
-                                        <span class="badge bg-secondary">0</span>
-                                        {% endif %}
-                                    </td>  
+                                    </td>
                                     <td class="align-middle text-white">
                                         {% for responsavel in processo.responsaveis.all %}
-                                        {{ responsavel.first_name }} {{ responsavel.last_name }}
-                                        {% if not forloop.last %}, {% endif %}
+                                            {{ responsavel.first_name }} {{ responsavel.last_name }}
+                                            {% if not forloop.last %}, {% endif %}
                                         {% empty %}
-                                        Nenhum responsável
+                                            Nenhum responsável
                                         {% endfor %}
                                     </td>
                                     <td class="align-middle text-white">{{ processo.proprietario.nome }}</td>
@@ -211,7 +229,7 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a href="{% url 'editar_processo' processo.id %}" target="_blank" class="dropdown-item">Editar processo</a>
-                                                
+                            
                                                 <button type="button" class="dropdown-item" data-toggle="modal" data-target="#addNoteModal" data-cliente-id="{{ processo.cliente.id }}" data-processo-id="{{ processo.id }}">
                                                     Adicionar Nota
                                                 </button>
@@ -220,25 +238,26 @@
                                                     <input type="hidden" name="processo_id" value="{{ processo.id }}">
                                                     <button type="submit" class="dropdown-item">Finalizar processo</button>
                                                 </form>
-                                                <form id="delete-form" action="{% url 'deletar_processo' processo.id %}" method="post" style="display: inline;">
+                                                <form id="delete-form-{{ processo.id }}" action="{% url 'deletar_processo' processo.id %}" method="post" style="display: inline;">
                                                     {% csrf_token %}
-                                                    <button type="button" class="dropdown-item text-danger" onclick="confirmarExclusao()">Excluir processo</button>
+                                                    <button type="button" class="dropdown-item text-danger" onclick="confirmarExclusao('{{ processo.id }}')">Excluir processo</button>
                                                 </form>
                                                 <a href="{% if processo.cliente %}{% url 'detalhes_do_processo' cliente_id=processo.cliente.id processo_id=processo.id %}{% endif %}" class="dropdown-item">Ver detalhes</a>
                                             </div>
                                         </div>
                                     </td>
-                                    
                                 </tr>
                                 {% endfor %}
                             </tbody>
+                            
+                            
                         </table>
                     </div>
                     
                     <script>
-                        function confirmarExclusao() {
+                        function confirmarExclusao(processoId) {
                             if (confirm("Tem certeza de que deseja excluir este processo?")) {
-                                document.getElementById('delete-form').submit();
+                                document.getElementById('delete-form-' + processoId).submit();
                             }
                         }
                     </script>

@@ -107,8 +107,8 @@
         <div class="mb-3">
             <label for="id_tags" class="form-label">Tags:</label>
             <select name="tags" id="id_tags" class="form-control" multiple>
-                {% for option_value, option_label in form.tags.field.choices %}
-                    <option value="{{ option_value }}" {% if option_value in form.tags.value %}selected{% endif %}>{{ option_label }}</option>
+                {% for tag in tags %}
+                    <option value="{{ tag.id }}" {% if tag in form.tags.all %}selected{% endif %}>{{ tag.name }}</option>
                 {% endfor %}
             </select>
         </div>
